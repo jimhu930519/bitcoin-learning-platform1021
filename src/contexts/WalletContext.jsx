@@ -1,4 +1,5 @@
-import { createContext, useContext, useState } from 'react'
+import { createContext, useContext, useState, useCallback } from 'react'
+import { INITIAL_WALLET_BALANCES, WALLET_ADDRESSES, TRADING_CONFIG } from '../constants/config'
 
 const WalletContext = createContext()
 
@@ -14,45 +15,60 @@ export const WalletProvider = ({ children }) => {
   // 錢包 A 的資產
   const [walletA, setWalletA] = useState({
     name: '錢包 A',
-    address: {
-      BTC: '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa',
-      ETH: '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb',
-      USDT_ETH: '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb',
-      USDT_BSC: '0x8894E0a0c962CB723c1976a4421c95949bE2D4E3'
-    },
-    balance: {
-      BTC: 0.5,
-      ETH: 2.0,
-      USDT: 1000
-    }
+    address: WALLET_ADDRESSES.A,
+    balance: { ...INITIAL_WALLET_BALANCES.A }
   })
 
   // 錢包 B 的資產
   const [walletB, setWalletB] = useState({
     name: '錢包 B',
-    address: {
-      BTC: '3J98t1WpEZ73CNmYviecrnyiWrnqRhWNLy',
-      ETH: '0x8894E0a0c962CB723c1976a4421c95949bE2D4E3',
-      USDT_ETH: '0x8894E0a0c962CB723c1976a4421c95949bE2D4E3',
-      USDT_BSC: '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb'
-    },
-    balance: {
-      BTC: 0.3,
-      ETH: 1.5,
-      USDT: 500
-    }
+    address: WALLET_ADDRESSES.B,
+    balance: { ...INITIAL_WALLET_BALANCES.B }
   })
 
   // 交易歷史
   const [transactionHistory, setTransactionHistory] = useState([])
 
+  // 獲取錢包對象
+  const getWallet = useCallback((walletId) => {
+    return walletId === 'A' ? walletA : walletB
+  }, [walletA, walletB])
+
+  // 獲取正確的地址
+  const getCorrectAddress = useCallback((wallet, coin, chain) => {
+    if (coin === 'BTC') {
+      return wallet.address.BTC
+    } else if (coin === 'ETH') {
+      return wallet.address.ETH
+    } else if (coin === 'USDT') {
+      if (chain === 'Ethereum') return wallet.address.USDT_ETH
+      if (chain === 'BSC') return wallet.address.USDT_BSC
+      return wallet.address.USDT_ETH
+    }
+    return ''
+  }, [])
+
+  // 更新錢包餘額 (通用方法)
+  const updateWalletBalance = useCallback((walletId, updates) => {
+    const setWallet = walletId === 'A' ? setWalletA : setWalletB
+    
+    setWallet(prev => ({
+      ...prev,
+      balance: {
+        ...prev.balance,
+        ...updates
+      }
+    }))
+  }, [])
+
   // 執行轉帳
-  const transfer = (fromWallet, toAddress, amount, coin, chain) => {
-    const from = fromWallet === 'A' ? walletA : walletB
-    const to = fromWallet === 'A' ? walletB : walletA
+  const transfer = useCallback((fromWalletId, toAddress, amount, coin, chain) => {
+    const fromWallet = getWallet(fromWalletId)
+    const toWalletId = fromWalletId === 'A' ? 'B' : 'A'
+    const toWallet = getWallet(toWalletId)
     
     // 檢查餘額
-    if (from.balance[coin] < amount) {
+    if (fromWallet.balance[coin] < amount) {
       return {
         success: false,
         message: '餘額不足！'
@@ -60,31 +76,17 @@ export const WalletProvider = ({ children }) => {
     }
 
     // 檢查地址和鏈是否匹配
-    const correctAddress = getCorrectAddress(to, coin, chain)
+    const correctAddress = getCorrectAddress(toWallet, coin, chain)
     
     if (toAddress !== correctAddress) {
-      // 地址錯誤或鏈錯誤 - 資產消失
-      if (fromWallet === 'A') {
-        setWalletA(prev => ({
-          ...prev,
-          balance: {
-            ...prev.balance,
-            [coin]: prev.balance[coin] - amount
-          }
-        }))
-      } else {
-        setWalletB(prev => ({
-          ...prev,
-          balance: {
-            ...prev.balance,
-            [coin]: prev.balance[coin] - amount
-          }
-        }))
-      }
+      // 地址錯誤 - 資產消失
+      updateWalletBalance(fromWalletId, {
+        [coin]: fromWallet.balance[coin] - amount
+      })
 
       const transaction = {
         id: Date.now(),
-        from: from.name,
+        from: fromWallet.name,
         to: '未知地址 ❌',
         amount,
         coin,
@@ -100,43 +102,20 @@ export const WalletProvider = ({ children }) => {
       }
     }
 
-    // 正確轉帳
-    if (fromWallet === 'A') {
-      setWalletA(prev => ({
-        ...prev,
-        balance: {
-          ...prev.balance,
-          [coin]: prev.balance[coin] - amount
-        }
-      }))
-      setWalletB(prev => ({
-        ...prev,
-        balance: {
-          ...prev.balance,
-          [coin]: prev.balance[coin] + amount
-        }
-      }))
-    } else {
-      setWalletB(prev => ({
-        ...prev,
-        balance: {
-          ...prev.balance,
-          [coin]: prev.balance[coin] - amount
-        }
-      }))
-      setWalletA(prev => ({
-        ...prev,
-        balance: {
-          ...prev.balance,
-          [coin]: prev.balance[coin] + amount
-        }
-      }))
-    }
+    // 正確轉帳 - 從發送方扣除
+    updateWalletBalance(fromWalletId, {
+      [coin]: fromWallet.balance[coin] - amount
+    })
+    
+    // 增加到接收方
+    updateWalletBalance(toWalletId, {
+      [coin]: toWallet.balance[coin] + amount
+    })
 
     const transaction = {
       id: Date.now(),
-      from: from.name,
-      to: to.name,
+      from: fromWallet.name,
+      to: toWallet.name,
       amount,
       coin,
       chain,
@@ -149,28 +128,83 @@ export const WalletProvider = ({ children }) => {
       success: true,
       message: '✅ 轉帳成功！'
     }
-  }
+  }, [getWallet, getCorrectAddress, updateWalletBalance])
 
-  // 獲取正確的地址
-  const getCorrectAddress = (wallet, coin, chain) => {
-    if (coin === 'BTC') {
-      return wallet.address.BTC
-    } else if (coin === 'ETH') {
-      return wallet.address.ETH
-    } else if (coin === 'USDT') {
-      if (chain === 'Ethereum') return wallet.address.USDT_ETH
-      if (chain === 'BSC') return wallet.address.USDT_BSC
-      return wallet.address.USDT_ETH
+  // 執行交易 (買入/賣出) - 新增功能！
+  const executeTrade = useCallback((
+    walletId, 
+    tradingPair, 
+    action, 
+    amount, 
+    price
+  ) => {
+    const wallet = getWallet(walletId)
+    const currency = tradingPair === 'BTC/USDT' ? 'USDT' : 'TWD'
+    const fee = amount * price * TRADING_CONFIG.FEE_RATE
+    const total = amount * price
+
+    // 驗證餘額
+    if (action === 'buy') {
+      const required = total + fee
+      if (wallet.balance[currency] < required) {
+        return {
+          success: false,
+          message: `${currency} 餘額不足！需要 ${required.toFixed(2)}，但只有 ${wallet.balance[currency].toFixed(2)}`
+        }
+      }
+    } else {
+      if (wallet.balance.BTC < amount) {
+        return {
+          success: false,
+          message: `BTC 餘額不足！需要 ${amount}，但只有 ${wallet.balance.BTC}`
+        }
+      }
     }
-    return ''
-  }
+
+    // 執行交易
+    if (action === 'buy') {
+      updateWalletBalance(walletId, {
+        BTC: wallet.balance.BTC + amount,
+        [currency]: wallet.balance[currency] - (total + fee)
+      })
+    } else {
+      updateWalletBalance(walletId, {
+        BTC: wallet.balance.BTC - amount,
+        [currency]: wallet.balance[currency] + (total - fee)
+      })
+    }
+
+    // 記錄交易
+    const transaction = {
+      id: Date.now(),
+      type: 'trade',
+      action,
+      pair: tradingPair,
+      amount,
+      price,
+      total,
+      fee,
+      timestamp: new Date().toLocaleString('zh-TW'),
+      wallet: `錢包 ${walletId}`
+    }
+    setTransactionHistory(prev => [transaction, ...prev])
+
+    return {
+      success: true,
+      message: `✅ ${action === 'buy' ? '買入' : '賣出'}成功！${amount} BTC @ ${price.toFixed(2)}`,
+      transaction
+    }
+  }, [getWallet, updateWalletBalance])
 
   const value = {
     walletA,
     walletB,
     transactionHistory,
+    getWallet,
     transfer,
-    getCorrectAddress
+    executeTrade, // 新增的交易方法
+    getCorrectAddress,
+    updateWalletBalance
   }
 
   return (

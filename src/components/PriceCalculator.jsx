@@ -1,49 +1,21 @@
 import { useState, useEffect } from 'react'
+import { useCryptoPrice } from '../hooks/useCryptoPrice'
 
 function PriceCalculator() {
-  // 使用模擬數據（接近真實市場價格）
-  const [btcPrice, setBtcPrice] = useState({
-    usd: 96850.00,
-    twd: 3145000
-  })
-  const [usdtTwdPrice, setUsdtTwdPrice] = useState(32.45)
+  // 使用自定義 Hook 獲取即時價格
+  const { prices, loading, error, lastUpdate, refresh } = useCryptoPrice(30000) // 每 30 秒更新
+  
   const [btcAmount, setBtcAmount] = useState('')
   const [calculatedUSDT, setCalculatedUSDT] = useState(0)
   const [calculatedTWD, setCalculatedTWD] = useState(0)
-  const [lastUpdate, setLastUpdate] = useState(new Date().toLocaleString('zh-TW'))
-
-  // 模擬價格波動（讓價格看起來有在變動）
-  useEffect(() => {
-    const interval = setInterval(() => {
-      // 模擬小幅波動 (-0.5% 到 +0.5%)
-      setBtcPrice(prev => ({
-        usd: prev.usd * (1 + (Math.random() - 0.5) * 0.01),
-        twd: prev.twd * (1 + (Math.random() - 0.5) * 0.01)
-      }))
-      setUsdtTwdPrice(prev => prev * (1 + (Math.random() - 0.5) * 0.002))
-      setLastUpdate(new Date().toLocaleString('zh-TW'))
-    }, 5000) // 每 5 秒更新一次
-
-    return () => clearInterval(interval)
-  }, [])
-
-  // 手動更新價格（模擬刷新）
-  const refreshPrices = () => {
-    setBtcPrice(prev => ({
-      usd: prev.usd * (1 + (Math.random() - 0.5) * 0.01),
-      twd: prev.twd * (1 + (Math.random() - 0.5) * 0.01)
-    }))
-    setUsdtTwdPrice(prev => prev * (1 + (Math.random() - 0.5) * 0.002))
-    setLastUpdate(new Date().toLocaleString('zh-TW'))
-  }
 
   // 計算購幣金額
   useEffect(() => {
-    if (btcAmount && btcPrice) {
+    if (btcAmount && prices.btc.usd > 0) {
       const amount = parseFloat(btcAmount)
       if (!isNaN(amount) && amount > 0) {
-        const usdt = amount * btcPrice.usd
-        const twd = amount * btcPrice.twd
+        const usdt = amount * prices.btc.usd
+        const twd = amount * prices.btc.twd
         setCalculatedUSDT(usdt)
         setCalculatedTWD(twd)
       } else {
@@ -54,7 +26,7 @@ function PriceCalculator() {
       setCalculatedUSDT(0)
       setCalculatedTWD(0)
     }
-  }, [btcAmount, btcPrice])
+  }, [btcAmount, prices])
 
   // 格式化數字
   const formatNumber = (num) => {
@@ -85,10 +57,13 @@ function PriceCalculator() {
             </h2>
           </div>
           <button
-            onClick={refreshPrices}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors"
+            onClick={refresh}
+            disabled={loading}
+            className={`bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors ${
+              loading ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
           >
-            🔄 更新價格
+            {loading ? '⏳ 更新中...' : '🔄 更新價格'}
           </button>
         </div>
         
@@ -98,12 +73,21 @@ function PriceCalculator() {
         
         <div className="flex items-center mt-2">
           <p className="text-sm text-gray-500">
-            最後更新：{lastUpdate}
+            最後更新：{lastUpdate ? lastUpdate.toLocaleString('zh-TW') : '載入中...'}
           </p>
           <span className="ml-3 px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full font-semibold">
-            模擬數據
+            {error ? '⚠️ 使用備用數據' : '✅ 即時數據'}
           </span>
         </div>
+
+        {/* 錯誤提示 */}
+        {error && (
+          <div className="mt-3 bg-yellow-50 border-l-4 border-yellow-500 p-3 rounded">
+            <p className="text-sm text-yellow-800">
+              ⚠️ {error} - 目前使用備用數據
+            </p>
+          </div>
+        )}
       </div>
 
       {/* 即時價格卡片 */}
@@ -115,20 +99,21 @@ function PriceCalculator() {
               <span className="text-4xl mr-3">₿</span>
               <h3 className="text-2xl font-bold">Bitcoin</h3>
             </div>
+            {loading && <div className="animate-spin text-2xl">⏳</div>}
           </div>
           
           <div className="space-y-3">
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
               <p className="text-sm opacity-80 mb-1">BTC / USDT</p>
               <p className="text-3xl font-bold">
-                ${formatNumber(btcPrice.usd)}
+                ${formatNumber(prices.btc.usd)}
               </p>
             </div>
             
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
               <p className="text-sm opacity-80 mb-1">BTC / TWD</p>
               <p className="text-3xl font-bold">
-                {formatCurrency(btcPrice.twd)}
+                {formatCurrency(prices.btc.twd)}
               </p>
             </div>
           </div>
@@ -141,13 +126,14 @@ function PriceCalculator() {
               <span className="text-4xl mr-3">💵</span>
               <h3 className="text-2xl font-bold">Tether</h3>
             </div>
+            {loading && <div className="animate-spin text-2xl">⏳</div>}
           </div>
           
           <div className="space-y-3">
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
               <p className="text-sm opacity-80 mb-1">USDT / TWD</p>
               <p className="text-3xl font-bold">
-                {formatCurrency(usdtTwdPrice)}
+                {formatCurrency(prices.usdt.twd)}
               </p>
             </div>
             
@@ -185,7 +171,8 @@ function PriceCalculator() {
               placeholder="0.00"
               step="0.001"
               min="0"
-              className="flex-1 px-6 py-4 border-2 border-gray-300 rounded-xl focus:border-bitcoin-orange focus:outline-none text-xl"
+              disabled={loading}
+              className="flex-1 px-6 py-4 border-2 border-gray-300 rounded-xl focus:border-bitcoin-orange focus:outline-none text-xl disabled:bg-gray-100"
             />
             <span className="flex items-center px-6 py-4 bg-bitcoin-orange text-white rounded-xl font-bold text-xl">
               BTC
@@ -196,25 +183,29 @@ function PriceCalculator() {
           <div className="grid grid-cols-4 gap-3 mt-4">
             <button
               onClick={() => setBtcAmount('0.001')}
-              className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg transition-colors font-semibold"
+              disabled={loading}
+              className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg transition-colors font-semibold disabled:opacity-50"
             >
               0.001
             </button>
             <button
               onClick={() => setBtcAmount('0.01')}
-              className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg transition-colors font-semibold"
+              disabled={loading}
+              className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg transition-colors font-semibold disabled:opacity-50"
             >
               0.01
             </button>
             <button
               onClick={() => setBtcAmount('0.1')}
-              className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg transition-colors font-semibold"
+              disabled={loading}
+              className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg transition-colors font-semibold disabled:opacity-50"
             >
               0.1
             </button>
             <button
               onClick={() => setBtcAmount('1')}
-              className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg transition-colors font-semibold"
+              disabled={loading}
+              className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg transition-colors font-semibold disabled:opacity-50"
             >
               1
             </button>

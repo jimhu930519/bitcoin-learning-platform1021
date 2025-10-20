@@ -1,17 +1,20 @@
 import { useState, useEffect } from 'react'
 import { useWallet } from '../contexts/WalletContext'
+import { useCryptoPrice } from '../hooks/useCryptoPrice'
+import { TRADING_CONFIG } from '../constants/config'
+import { Button } from './shared/Button'
+import { InfoBox } from './shared/InfoBox'
 
 function TradingSimulator() {
-  const { walletA, walletB } = useWallet()
+  const { walletA, walletB, executeTrade, getWallet } = useWallet()
   
-  // 模擬價格數據
-  const [btcPrice, setBtcPrice] = useState(97000)
-  const [usdtTwdRate, setUsdtTwdRate] = useState(32.5)
+  // 使用真實價格數據
+  const { prices, loading: priceLoading, error: priceError, refresh } = useCryptoPrice(30000)
   
   // 交易設定
-  const [tradingPair, setTradingPair] = useState('BTC/USDT') // BTC/USDT 或 BTC/TWD
-  const [orderType, setOrderType] = useState('market') // market 或 limit
-  const [tradeAction, setTradeAction] = useState('buy') // buy 或 sell
+  const [tradingPair, setTradingPair] = useState('BTC/USDT')
+  const [orderType, setOrderType] = useState('market')
+  const [tradeAction, setTradeAction] = useState('buy')
   const [amount, setAmount] = useState('')
   const [limitPrice, setLimitPrice] = useState('')
   const [selectedWallet, setSelectedWallet] = useState('A')
@@ -20,28 +23,13 @@ function TradingSimulator() {
   const [orderHistory, setOrderHistory] = useState([])
   const [message, setMessage] = useState(null)
   const [isProcessing, setIsProcessing] = useState(false)
-  
-  // 錢包餘額（本地模擬）
-  const [localBalances, setLocalBalances] = useState({
-    A: { BTC: 0.5, USDT: 10000, TWD: 300000 },
-    B: { BTC: 0.3, USDT: 5000, TWD: 150000 }
-  })
-
-  // 模擬價格波動
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setBtcPrice(prev => prev * (1 + (Math.random() - 0.5) * 0.002))
-      setUsdtTwdRate(prev => prev * (1 + (Math.random() - 0.5) * 0.001))
-    }, 3000)
-    return () => clearInterval(interval)
-  }, [])
 
   // 計算當前價格
   const getCurrentPrice = () => {
     if (tradingPair === 'BTC/USDT') {
-      return btcPrice
+      return prices.btc.usd
     } else {
-      return btcPrice * usdtTwdRate
+      return prices.btc.twd
     }
   }
 
@@ -52,21 +40,18 @@ function TradingSimulator() {
     return parseFloat(amount) * price
   }
 
-  // 計算手續費 (0.1%)
+  // 計算手續費
   const calculateFee = () => {
-    return calculateTotal() * 0.001
+    return calculateTotal() * TRADING_CONFIG.FEE_RATE
   }
 
-  // 獲取當前餘額
-  const getCurrentBalance = () => {
-    return localBalances[selectedWallet]
+  // 獲取當前錢包餘額
+  const getCurrentWallet = () => {
+    return getWallet(selectedWallet)
   }
 
   // 執行交易
-  const executeTrade = () => {
-    const balance = getCurrentBalance()
-    const total = calculateTotal()
-    const fee = calculateFee()
+  const handleExecuteTrade = () => {
     const amountNum = parseFloat(amount)
 
     // 驗證輸入
@@ -80,106 +65,100 @@ function TradingSimulator() {
       return
     }
 
-    // 檢查餘額
-    if (tradeAction === 'buy') {
-      const currency = tradingPair === 'BTC/USDT' ? 'USDT' : 'TWD'
-      const required = total + fee
-      
-      if (balance[currency] < required) {
-        setMessage({ 
-          type: 'error', 
-          text: `${currency} 餘額不足！需要 ${required.toFixed(2)}，但只有 ${balance[currency].toFixed(2)}` 
-        })
-        return
-      }
-    } else {
-      if (balance.BTC < amountNum) {
-        setMessage({ 
-          type: 'error', 
-          text: `BTC 餘額不足！需要 ${amountNum}，但只有 ${balance.BTC}` 
-        })
-        return
-      }
+    // 檢查價格數據是否已載入
+    if (getCurrentPrice() === 0) {
+      setMessage({ type: 'error', text: '價格數據載入中，請稍後再試...' })
+      return
     }
 
     // 模擬交易處理
     setIsProcessing(true)
+    
     setTimeout(() => {
-      const executionPrice = getCurrentPrice()
-      const currency = tradingPair === 'BTC/USDT' ? 'USDT' : 'TWD'
+      const executionPrice = orderType === 'limit' && limitPrice 
+        ? parseFloat(limitPrice) 
+        : getCurrentPrice()
 
-      // 更新餘額
-      const newBalances = { ...localBalances }
-      if (tradeAction === 'buy') {
-        newBalances[selectedWallet].BTC += amountNum
-        newBalances[selectedWallet][currency] -= (total + fee)
+      // 使用 Context 的 executeTrade 方法
+      const result = executeTrade(
+        selectedWallet,
+        tradingPair,
+        tradeAction,
+        amountNum,
+        executionPrice
+      )
+
+      if (result.success) {
+        // 添加到訂單歷史
+        setOrderHistory([result.transaction, ...orderHistory])
+        
+        setMessage({
+          type: 'success',
+          text: result.message
+        })
+
+        // 清空表單
+        setAmount('')
+        setLimitPrice('')
       } else {
-        newBalances[selectedWallet].BTC -= amountNum
-        newBalances[selectedWallet][currency] += (total - fee)
+        setMessage({
+          type: 'error',
+          text: result.message
+        })
       }
-      setLocalBalances(newBalances)
 
-      // 記錄訂單
-      const order = {
-        id: Date.now(),
-        type: orderType,
-        action: tradeAction,
-        pair: tradingPair,
-        amount: amountNum,
-        price: executionPrice,
-        total: total,
-        fee: fee,
-        timestamp: new Date().toLocaleString('zh-TW'),
-        wallet: `錢包 ${selectedWallet}`
-      }
-      setOrderHistory([order, ...orderHistory])
-
-      setMessage({
-        type: 'success',
-        text: `✅ ${tradeAction === 'buy' ? '買入' : '賣出'}成功！${amountNum} BTC @ ${executionPrice.toFixed(2)}`
-      })
-
-      // 清空表單
-      setAmount('')
-      setLimitPrice('')
       setIsProcessing(false)
-    }, 1500)
+    }, TRADING_CONFIG.TRADE_PROCESSING_TIME)
   }
 
   const currentPrice = getCurrentPrice()
   const total = calculateTotal()
   const fee = calculateFee()
-  const balance = getCurrentBalance()
+  const balance = getCurrentWallet().balance
 
   return (
     <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl p-6 sm:p-8 lg:p-10 border border-gray-100">
       {/* 標題 */}
       <div className="mb-8">
-        <div className="flex items-center mb-4">
-          <span className="text-5xl mr-4">📊</span>
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-800">
-            模擬交易系統
-          </h2>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center">
+            <span className="text-5xl mr-4">📊</span>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-800">
+              模擬交易系統
+            </h2>
+          </div>
+          <button
+            onClick={refresh}
+            disabled={priceLoading}
+            className={`bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-lg transition-colors text-sm ${
+              priceLoading ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
+          >
+            {priceLoading ? '⏳' : '🔄'} 更新價格
+          </button>
         </div>
         <p className="text-gray-600 text-lg leading-relaxed">
           體驗加密貨幣交易流程，包含市價單和限價單操作
         </p>
+
+        {/* 價格錯誤提示 */}
+        {priceError && (
+          <div className="mt-3 bg-yellow-50 border-l-4 border-yellow-500 p-3 rounded">
+            <p className="text-sm text-yellow-800">
+              ⚠️ {priceError} - 目前使用備用數據
+            </p>
+          </div>
+        )}
       </div>
 
       {/* 說明卡片 */}
       <div className="grid md:grid-cols-2 gap-4 mb-8">
-        <div className="bg-blue-50 border-l-4 border-blue-500 p-5 rounded-xl">
-          <h4 className="font-bold text-gray-800 mb-2">💡 市價單</h4>
-          <p className="text-sm text-gray-700">
-            以當前市場價格立即成交。優點是成交快速，缺點是無法控制成交價格。
-          </p>
-        </div>
-        <div className="bg-purple-50 border-l-4 border-purple-500 p-5 rounded-xl">
-          <h4 className="font-bold text-gray-800 mb-2">🎯 限價單</h4>
-          <p className="text-sm text-gray-700">
-            設定目標價格，到達該價格才成交。可控制成交價，但可能無法立即成交。
-          </p>
-        </div>
+        <InfoBox type="info" title="市價單">
+          以當前市場價格立即成交。優點是成交快速，缺點是無法控制成交價格。
+        </InfoBox>
+        <InfoBox type="info" title="限價單" icon="🎯">
+          設定目標價格，到達該價格才成交。可控制成交價，但可能無法立即成交。
+        </InfoBox>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-8">
@@ -189,11 +168,21 @@ function TradingSimulator() {
           <div className="bg-gradient-to-r from-bitcoin-orange to-orange-600 text-white rounded-2xl p-6 mb-6">
             <div className="flex justify-between items-center">
               <div>
-                <p className="text-sm opacity-80 mb-1">當前價格 ({tradingPair})</p>
+                <p className="text-sm opacity-80 mb-1">
+                  當前價格 ({tradingPair})
+                  {priceLoading && <span className="ml-2 animate-pulse">更新中...</span>}
+                </p>
                 <p className="text-4xl font-bold">
-                  {tradingPair === 'BTC/USDT' 
-                    ? `$${currentPrice.toFixed(2)}` 
-                    : `NT$${currentPrice.toFixed(0)}`}
+                  {currentPrice > 0 ? (
+                    tradingPair === 'BTC/USDT' 
+                      ? `$${currentPrice.toFixed(2)}` 
+                      : `NT$${currentPrice.toFixed(0)}`
+                  ) : (
+                    <span className="text-2xl">載入中...</span>
+                  )}
+                </p>
+                <p className="text-xs opacity-70 mt-1">
+                  {priceError ? '⚠️ 使用備用數據' : '✅ 即時市場價格'}
                 </p>
               </div>
               <span className="text-6xl">₿</span>
@@ -213,7 +202,7 @@ function TradingSimulator() {
                 }`}
               >
                 <p className="font-bold">錢包 A</p>
-                <p className="text-sm text-gray-600">BTC: {balance.BTC}</p>
+                <p className="text-sm text-gray-600">BTC: {walletA.balance.BTC}</p>
               </button>
               <button
                 onClick={() => setSelectedWallet('B')}
@@ -224,7 +213,7 @@ function TradingSimulator() {
                 }`}
               >
                 <p className="font-bold">錢包 B</p>
-                <p className="text-sm text-gray-600">BTC: {balance.BTC}</p>
+                <p className="text-sm text-gray-600">BTC: {walletB.balance.BTC}</p>
               </button>
             </div>
           </div>
@@ -324,7 +313,8 @@ function TradingSimulator() {
               placeholder="0.00"
               step="0.001"
               min="0"
-              className="w-full px-6 py-4 border-2 border-gray-300 rounded-xl focus:border-bitcoin-orange focus:outline-none text-xl"
+              disabled={priceLoading || currentPrice === 0}
+              className="w-full px-6 py-4 border-2 border-gray-300 rounded-xl focus:border-bitcoin-orange focus:outline-none text-xl disabled:bg-gray-100"
             />
             <p className="text-sm text-gray-600 mt-2">
               可用: {tradeAction === 'buy' 
@@ -343,19 +333,20 @@ function TradingSimulator() {
                 type="number"
                 value={limitPrice}
                 onChange={(e) => setLimitPrice(e.target.value)}
-                placeholder={currentPrice.toFixed(2)}
+                placeholder={currentPrice > 0 ? currentPrice.toFixed(2) : '載入中...'}
                 step="0.01"
                 min="0"
-                className="w-full px-6 py-4 border-2 border-gray-300 rounded-xl focus:border-bitcoin-orange focus:outline-none text-xl"
+                disabled={priceLoading || currentPrice === 0}
+                className="w-full px-6 py-4 border-2 border-gray-300 rounded-xl focus:border-bitcoin-orange focus:outline-none text-xl disabled:bg-gray-100"
               />
               <p className="text-sm text-gray-600 mt-2">
-                當前市價: {currentPrice.toFixed(2)}
+                當前市價: {currentPrice > 0 ? currentPrice.toFixed(2) : '載入中...'}
               </p>
             </div>
           )}
 
           {/* 交易摘要 */}
-          {amount && parseFloat(amount) > 0 && (
+          {amount && parseFloat(amount) > 0 && currentPrice > 0 && (
             <div className="bg-gray-50 rounded-xl p-6 mb-6">
               <h4 className="font-bold text-gray-800 mb-4">交易摘要</h4>
               <div className="space-y-2">
@@ -374,7 +365,7 @@ function TradingSimulator() {
                   <span className="font-semibold">{total.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">手續費 (0.1%):</span>
+                  <span className="text-gray-600">手續費 ({(TRADING_CONFIG.FEE_RATE * 100).toFixed(1)}%):</span>
                   <span className="font-semibold">{fee.toFixed(2)}</span>
                 </div>
                 <div className="border-t-2 border-gray-300 pt-2 mt-2"></div>
@@ -390,19 +381,18 @@ function TradingSimulator() {
           )}
 
           {/* 執行按鈕 */}
-          <button
-            onClick={executeTrade}
-            disabled={isProcessing}
-            className={`w-full py-4 rounded-xl font-bold text-xl transition-all duration-300 ${
-              tradeAction === 'buy'
-                ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700'
-                : 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700'
-            } text-white shadow-lg hover:shadow-xl transform hover:-translate-y-1 disabled:opacity-50 disabled:transform-none`}
+          <Button
+            onClick={handleExecuteTrade}
+            disabled={isProcessing || priceLoading || currentPrice === 0}
+            variant={tradeAction === 'buy' ? 'success' : 'danger'}
+            className="w-full"
           >
             {isProcessing 
               ? '處理中...' 
+              : priceLoading || currentPrice === 0
+              ? '價格載入中...'
               : `${tradeAction === 'buy' ? '買入' : '賣出'} BTC`}
-          </button>
+          </Button>
 
           {/* 訊息顯示 */}
           {message && (
@@ -468,7 +458,7 @@ function TradingSimulator() {
                         {order.action === 'buy' ? '買入' : '賣出'}
                       </span>
                       <span className="text-xs text-gray-500">
-                        {order.type === 'market' ? '市價' : '限價'}
+                        {orderType === 'market' ? '市價' : '限價'}
                       </span>
                     </div>
                     <p className="text-sm">
