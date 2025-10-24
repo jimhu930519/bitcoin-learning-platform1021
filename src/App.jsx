@@ -68,39 +68,44 @@ function App() {
           透過互動式學習，理解區塊鏈技術與比特幣的核心原理
         </p>
         
-        {/* 柔和優化的資訊卡片 */}
+        {/* 白色高對比卡片 */}
         <div className="grid md:grid-cols-2 gap-6 mt-8">
-          <div className="bg-white/20 backdrop-blur-lg rounded-2xl p-6 border-2 border-white/40 shadow-xl hover:bg-white/25 hover:border-white/60 transition-all duration-300 hover:shadow-2xl">
-            <h3 className="text-2xl font-bold mb-3 text-white drop-shadow-lg">
-              💡 什麼是比特幣？
-            </h3>
-            <p className="text-lg leading-relaxed text-white/95 drop-shadow-md">
+          <div className="bg-white rounded-2xl p-6 shadow-xl">
+            <div className="flex items-center mb-3">
+              <span className="text-3xl mr-3">💡</span>
+              <h3 className="text-2xl font-bold text-gray-800">什麼是比特幣？</h3>
+            </div>
+            <p className="text-lg leading-relaxed text-gray-700">
               比特幣（Bitcoin, BTC）是一種去中心化的數位貨幣，由中本聰在 2009 年創建。
               它使用區塊鏈技術記錄所有交易，總量限制為 2100 萬枚。
             </p>
           </div>
           
-          <div className="bg-white/20 backdrop-blur-lg rounded-2xl p-6 border-2 border-white/40 shadow-xl hover:bg-white/25 hover:border-white/60 transition-all duration-300 hover:shadow-2xl">
-            <h3 className="text-2xl font-bold mb-3 text-white drop-shadow-lg">
-              🎯 為何稱為數位黃金？
-            </h3>
-            <p className="text-lg leading-relaxed text-white/95 drop-shadow-md">
+          <div className="bg-white rounded-2xl p-6 shadow-xl">
+            <div className="flex items-center mb-3">
+              <span className="text-3xl mr-3">🎯</span>
+              <h3 className="text-2xl font-bold text-gray-800">為何稱為數位黃金？</h3>
+            </div>
+            <p className="text-lg leading-relaxed text-gray-700">
               如同黃金稀缺且難以偽造，比特幣總量固定、無法篡改，
               被視為對抗通膨的避險工具。
             </p>
           </div>
         </div>
 
-        {/* 快速導覽卡片 */}
-        <div className="mt-8 bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <h3 className="text-2xl font-bold mb-4">🚀 開始探索</h3>
-          <p className="text-lg mb-4">點擊上方標籤，體驗各項互動功能：</p>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+        {/* 開始探索區塊 - 白色高對比 */}
+        <div className="mt-8 bg-white rounded-2xl p-6 shadow-xl">
+          <div className="flex items-center mb-4">
+            <span className="text-3xl mr-3">🚀</span>
+            <h3 className="text-2xl font-bold text-gray-800">開始探索</h3>
+          </div>
+          <p className="text-lg mb-4 text-gray-700">點擊上方標籤，體驗各項互動功能：</p>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {tabs.slice(1).map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className="bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-xl p-4 transition-all duration-300 hover:scale-105"
+                className="bg-gradient-to-br from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-600 text-white rounded-xl p-4 transition-all duration-300 hover:scale-105 shadow-lg"
               >
                 <div className="text-3xl mb-2">{tab.icon}</div>
                 <div className="text-sm font-semibold">{tab.label}</div>
