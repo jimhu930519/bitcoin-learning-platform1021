@@ -50,66 +50,91 @@ function TradingSimulator() {
     return getWallet(selectedWallet)
   }
 
-  // 執行交易
-  const handleExecuteTrade = () => {
-    const amountNum = parseFloat(amount)
+// 執行交易
+const handleExecuteTrade = () => {
+  const amountNum = parseFloat(amount)
+  const currentPrice = getCurrentPrice()
 
-    // 驗證輸入
-    if (!amount || amountNum <= 0) {
-      setMessage({ type: 'error', text: '請輸入有效的交易數量！' })
-      return
-    }
-
-    if (orderType === 'limit' && (!limitPrice || parseFloat(limitPrice) <= 0)) {
-      setMessage({ type: 'error', text: '請輸入有效的限價！' })
-      return
-    }
-
-    // 檢查價格數據是否已載入
-    if (getCurrentPrice() === 0) {
-      setMessage({ type: 'error', text: '價格數據載入中，請稍後再試...' })
-      return
-    }
-
-    // 模擬交易處理
-    setIsProcessing(true)
-    
-    setTimeout(() => {
-      const executionPrice = orderType === 'limit' && limitPrice 
-        ? parseFloat(limitPrice) 
-        : getCurrentPrice()
-
-      // 使用 Context 的 executeTrade 方法
-      const result = executeTrade(
-        selectedWallet,
-        tradingPair,
-        tradeAction,
-        amountNum,
-        executionPrice
-      )
-
-      if (result.success) {
-        // 添加到訂單歷史
-        setOrderHistory([result.transaction, ...orderHistory])
-        
-        setMessage({
-          type: 'success',
-          text: result.message
-        })
-
-        // 清空表單
-        setAmount('')
-        setLimitPrice('')
-      } else {
-        setMessage({
-          type: 'error',
-          text: result.message
-        })
-      }
-
-      setIsProcessing(false)
-    }, TRADING_CONFIG.TRADE_PROCESSING_TIME)
+  // 驗證輸入
+  if (!amount || amountNum <= 0) {
+    setMessage({ type: 'error', text: '請輸入有效的交易數量！' })
+    return
   }
+
+  if (orderType === 'limit' && (!limitPrice || parseFloat(limitPrice) <= 0)) {
+    setMessage({ type: 'error', text: '請輸入有效的限價！' })
+    return
+  }
+
+  // 檢查價格數據是否已載入
+  if (currentPrice === 0) {
+    setMessage({ type: 'error', text: '價格數據載入中，請稍後再試...' })
+    return
+  }
+
+  // 限價單邏輯檢查
+  if (orderType === 'limit') {
+    const limitPriceNum = parseFloat(limitPrice)
+    
+    // 限價買入：限價必須 >= 當前市價才能立即成交
+    if (tradeAction === 'buy' && limitPriceNum < currentPrice) {
+      setMessage({ 
+        type: 'info', 
+        text: `⏳ 限價買入訂單已掛單！\n\n目前市價：${currentPrice.toFixed(2)}\n您的限價：${limitPriceNum.toFixed(2)}\n\n當市價降至 ${limitPriceNum.toFixed(2)} 或以下時將自動成交。\n\n💡 提示：在真實交易所，此訂單會等待市價到達後才成交。若要立即成交，請設定限價高於或等於當前市價。` 
+      })
+      return
+    }
+    
+    // 限價賣出：限價必須 <= 當前市價才能立即成交
+    if (tradeAction === 'sell' && limitPriceNum > currentPrice) {
+      setMessage({ 
+        type: 'info', 
+        text: `⏳ 限價賣出訂單已掛單！\n\n目前市價：${currentPrice.toFixed(2)}\n您的限價：${limitPriceNum.toFixed(2)}\n\n當市價升至 ${limitPriceNum.toFixed(2)} 或以上時將自動成交。\n\n💡 提示：在真實交易所，此訂單會等待市價到達後才成交。若要立即成交，請設定限價低於或等於當前市價。` 
+      })
+      return
+    }
+  }
+
+  // 模擬交易處理
+  setIsProcessing(true)
+  
+  setTimeout(() => {
+    const executionPrice = orderType === 'limit' && limitPrice 
+      ? parseFloat(limitPrice) 
+      : getCurrentPrice()
+
+    // 使用 Context 的 executeTrade 方法
+    const result = executeTrade(
+      selectedWallet,
+      tradingPair,
+      tradeAction,
+      amountNum,
+      executionPrice
+    )
+
+    if (result.success) {
+      // 添加到訂單歷史
+      setOrderHistory([result.transaction, ...orderHistory])
+      
+      const orderTypeText = orderType === 'market' ? '市價' : '限價'
+      setMessage({
+        type: 'success',
+        text: `✅ ${orderTypeText}${tradeAction === 'buy' ? '買入' : '賣出'}成功！\n${amountNum.toFixed(6)} BTC @ ${executionPrice.toFixed(2)}`
+      })
+
+      // 清空表單
+      setAmount('')
+      setLimitPrice('')
+    } else {
+      setMessage({
+        type: 'error',
+        text: result.message
+      })
+    }
+
+    setIsProcessing(false)
+  }, TRADING_CONFIG.TRADE_PROCESSING_TIME)
+}
 
   const currentPrice = getCurrentPrice()
   const total = calculateTotal()
