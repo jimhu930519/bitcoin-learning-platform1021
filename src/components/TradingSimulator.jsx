@@ -21,6 +21,7 @@ function TradingSimulator() {
   
   // 交易狀態
   const [orderHistory, setOrderHistory] = useState([])
+  const [pendingOrders, setPendingOrders] = useState([])
   const [message, setMessage] = useState(null)
   const [isProcessing, setIsProcessing] = useState(false)
 
@@ -50,91 +51,180 @@ function TradingSimulator() {
     return getWallet(selectedWallet)
   }
 
-// 執行交易
-const handleExecuteTrade = () => {
-  const amountNum = parseFloat(amount)
-  const currentPrice = getCurrentPrice()
+  // 監控價格變化，自動執行掛單
+  useEffect(() => {
+    if (pendingOrders.length === 0 || priceLoading) return
 
-  // 驗證輸入
-  if (!amount || amountNum <= 0) {
-    setMessage({ type: 'error', text: '請輸入有效的交易數量！' })
-    return
-  }
+    const currentPrice = getCurrentPrice()
+    if (currentPrice === 0) return
 
-  if (orderType === 'limit' && (!limitPrice || parseFloat(limitPrice) <= 0)) {
-    setMessage({ type: 'error', text: '請輸入有效的限價！' })
-    return
-  }
+    // 檢查每個掛單是否達到執行條件
+    const ordersToExecute = pendingOrders.filter(order => {
+      if (order.action === 'buy') {
+        // 買入：市價降至或低於限價
+        return currentPrice <= order.limitPrice
+      } else {
+        // 賣出：市價升至或高於限價
+        return currentPrice >= order.limitPrice
+      }
+    })
 
-  // 檢查價格數據是否已載入
-  if (currentPrice === 0) {
-    setMessage({ type: 'error', text: '價格數據載入中，請稍後再試...' })
-    return
-  }
+    // 執行達到條件的掛單
+    if (ordersToExecute.length > 0) {
+      ordersToExecute.forEach(order => {
+        const result = executeTrade(
+          order.wallet,
+          order.tradingPair,
+          order.action,
+          order.amount,
+          order.limitPrice
+        )
 
-  // 限價單邏輯檢查
-  if (orderType === 'limit') {
-    const limitPriceNum = parseFloat(limitPrice)
-    
-    // 限價買入：限價必須 >= 當前市價才能立即成交
-    if (tradeAction === 'buy' && limitPriceNum < currentPrice) {
-      setMessage({ 
-        type: 'info', 
-        text: `⏳ 限價買入訂單已掛單！\n\n目前市價：${currentPrice.toFixed(2)}\n您的限價：${limitPriceNum.toFixed(2)}\n\n當市價降至 ${limitPriceNum.toFixed(2)} 或以下時將自動成交。\n\n💡 提示：在真實交易所，此訂單會等待市價到達後才成交。若要立即成交，請設定限價高於或等於當前市價。` 
+        if (result.success) {
+          // 加入成交記錄
+          setOrderHistory(prev => [result.transaction, ...prev])
+          
+          // 從掛單列表移除
+          setPendingOrders(prev => prev.filter(o => o.id !== order.id))
+          
+          // 顯示成交通知
+          setMessage({
+            type: 'success',
+            text: `✅ 限價單自動成交！\n${order.amount.toFixed(6)} BTC @ ${order.limitPrice.toFixed(2)}`
+          })
+        }
       })
+    }
+  }, [prices, pendingOrders, executeTrade, priceLoading, tradingPair])
+
+  // 取消掛單
+  const cancelOrder = (orderId) => {
+    setPendingOrders(prev => prev.filter(order => order.id !== orderId))
+    setMessage({ 
+      type: 'info', 
+      text: '✅ 掛單已取消' 
+    })
+  }
+
+  // 執行交易
+  const handleExecuteTrade = () => {
+    const amountNum = parseFloat(amount)
+    const currentPrice = getCurrentPrice()
+
+    // 驗證輸入
+    if (!amount || amountNum <= 0) {
+      setMessage({ type: 'error', text: '請輸入有效的交易數量！' })
       return
     }
-    
-    // 限價賣出：限價必須 <= 當前市價才能立即成交
-    if (tradeAction === 'sell' && limitPriceNum > currentPrice) {
-      setMessage({ 
-        type: 'info', 
-        text: `⏳ 限價賣出訂單已掛單！\n\n目前市價：${currentPrice.toFixed(2)}\n您的限價：${limitPriceNum.toFixed(2)}\n\n當市價升至 ${limitPriceNum.toFixed(2)} 或以上時將自動成交。\n\n💡 提示：在真實交易所，此訂單會等待市價到達後才成交。若要立即成交，請設定限價低於或等於當前市價。` 
-      })
+
+    if (orderType === 'limit' && (!limitPrice || parseFloat(limitPrice) <= 0)) {
+      setMessage({ type: 'error', text: '請輸入有效的限價！' })
       return
     }
-  }
 
-  // 模擬交易處理
-  setIsProcessing(true)
-  
-  setTimeout(() => {
-    const executionPrice = orderType === 'limit' && limitPrice 
-      ? parseFloat(limitPrice) 
-      : getCurrentPrice()
+    // 檢查價格數據是否已載入
+    if (currentPrice === 0) {
+      setMessage({ type: 'error', text: '價格數據載入中，請稍後再試...' })
+      return
+    }
 
-    // 使用 Context 的 executeTrade 方法
-    const result = executeTrade(
-      selectedWallet,
-      tradingPair,
-      tradeAction,
-      amountNum,
-      executionPrice
-    )
-
-    if (result.success) {
-      // 添加到訂單歷史
-      setOrderHistory([result.transaction, ...orderHistory])
+    // 限價單邏輯檢查
+    if (orderType === 'limit') {
+      const limitPriceNum = parseFloat(limitPrice)
       
-      const orderTypeText = orderType === 'market' ? '市價' : '限價'
-      setMessage({
-        type: 'success',
-        text: `✅ ${orderTypeText}${tradeAction === 'buy' ? '買入' : '賣出'}成功！\n${amountNum.toFixed(6)} BTC @ ${executionPrice.toFixed(2)}`
-      })
-
-      // 清空表單
-      setAmount('')
-      setLimitPrice('')
-    } else {
-      setMessage({
-        type: 'error',
-        text: result.message
-      })
+      // 限價買入：限價必須 >= 當前市價才能立即成交
+      if (tradeAction === 'buy' && limitPriceNum < currentPrice) {
+        // 創建掛單
+        const newOrder = {
+          id: Date.now(),
+          wallet: selectedWallet,
+          tradingPair,
+          action: tradeAction,
+          amount: amountNum,
+          limitPrice: limitPriceNum,
+          timestamp: new Date().toLocaleString('zh-TW')
+        }
+        
+        setPendingOrders(prev => [newOrder, ...prev])
+        
+        setMessage({ 
+          type: 'info', 
+          text: `⌛ 限價買入掛單已創建！\n\n目前市價：${currentPrice.toFixed(2)}\n您的限價：${limitPriceNum.toFixed(2)}\n\n當市價降至 ${limitPriceNum.toFixed(2)} 或以下時將自動成交。\n\n💡 您可以在右側「掛單列表」查看和管理您的掛單。` 
+        })
+        
+        // 清空表單
+        setAmount('')
+        setLimitPrice('')
+        return
+      }
+      
+      // 限價賣出：限價必須 <= 當前市價才能立即成交
+      if (tradeAction === 'sell' && limitPriceNum > currentPrice) {
+        // 創建掛單
+        const newOrder = {
+          id: Date.now(),
+          wallet: selectedWallet,
+          tradingPair,
+          action: tradeAction,
+          amount: amountNum,
+          limitPrice: limitPriceNum,
+          timestamp: new Date().toLocaleString('zh-TW')
+        }
+        
+        setPendingOrders(prev => [newOrder, ...prev])
+        
+        setMessage({ 
+          type: 'info', 
+          text: `⌛ 限價賣出掛單已創建！\n\n目前市價：${currentPrice.toFixed(2)}\n您的限價：${limitPriceNum.toFixed(2)}\n\n當市價升至 ${limitPriceNum.toFixed(2)} 或以上時將自動成交。\n\n💡 您可以在右側「掛單列表」查看和管理您的掛單。` 
+        })
+        
+        // 清空表單
+        setAmount('')
+        setLimitPrice('')
+        return
+      }
     }
 
-    setIsProcessing(false)
-  }, TRADING_CONFIG.TRADE_PROCESSING_TIME)
-}
+    // 模擬交易處理
+    setIsProcessing(true)
+    
+    setTimeout(() => {
+      const executionPrice = orderType === 'limit' && limitPrice 
+        ? parseFloat(limitPrice) 
+        : getCurrentPrice()
+
+      // 使用 Context 的 executeTrade 方法
+      const result = executeTrade(
+        selectedWallet,
+        tradingPair,
+        tradeAction,
+        amountNum,
+        executionPrice
+      )
+
+      if (result.success) {
+        // 添加到訂單歷史
+        setOrderHistory([result.transaction, ...orderHistory])
+        
+        const orderTypeText = orderType === 'market' ? '市價' : '限價'
+        setMessage({
+          type: 'success',
+          text: `✅ ${orderTypeText}${tradeAction === 'buy' ? '買入' : '賣出'}成功！\n${amountNum.toFixed(6)} BTC @ ${executionPrice.toFixed(2)}`
+        })
+
+        // 清空表單
+        setAmount('')
+        setLimitPrice('')
+      } else {
+        setMessage({
+          type: 'error',
+          text: result.message
+        })
+      }
+
+      setIsProcessing(false)
+    }, TRADING_CONFIG.TRADE_PROCESSING_TIME)
+  }
 
   const currentPrice = getCurrentPrice()
   const total = calculateTotal()
@@ -175,6 +265,7 @@ const handleExecuteTrade = () => {
           </div>
         )}
       </div>
+
       {/* 說明卡片 */}
       <div className="grid md:grid-cols-2 gap-4 mb-8">
         <InfoBox type="info" title="市價單">
@@ -420,9 +511,11 @@ const handleExecuteTrade = () => {
 
           {/* 訊息顯示 */}
           {message && (
-            <div className={`mt-6 p-4 rounded-xl ${
+            <div className={`mt-6 p-4 rounded-xl whitespace-pre-line ${
               message.type === 'success' 
                 ? 'bg-green-100 border-2 border-green-500 text-green-800' 
+                : message.type === 'info'
+                ? 'bg-blue-100 border-2 border-blue-500 text-blue-800'
                 : 'bg-red-100 border-2 border-red-500 text-red-800'
             }`}>
               <p className="font-semibold">{message.text}</p>
@@ -430,7 +523,7 @@ const handleExecuteTrade = () => {
           )}
         </div>
 
-        {/* 右側：錢包餘額和訂單歷史 */}
+        {/* 右側：錢包餘額、掛單列表和訂單歷史 */}
         <div className="space-y-6">
           {/* 錢包餘額 */}
           <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 border-2 border-blue-200">
@@ -459,6 +552,56 @@ const handleExecuteTrade = () => {
             </div>
           </div>
 
+          {/* 掛單列表 */}
+          {pendingOrders.length > 0 && (
+            <div className="bg-white rounded-2xl p-6 border-2 border-orange-300">
+              <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                <span className="mr-2">⏳</span>
+                掛單列表
+                <span className="ml-2 bg-orange-100 text-orange-700 text-xs px-2 py-1 rounded-full">
+                  {pendingOrders.length}
+                </span>
+              </h3>
+              <div className="space-y-3 max-h-96 overflow-y-auto">
+                {pendingOrders.map(order => (
+                  <div 
+                    key={order.id}
+                    className={`p-3 rounded-lg border-2 ${
+                      order.action === 'buy'
+                        ? 'bg-green-50 border-green-300'
+                        : 'bg-red-50 border-red-300'
+                    }`}
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <span className={`font-bold ${
+                        order.action === 'buy' ? 'text-green-700' : 'text-red-700'
+                      }`}>
+                        限價{order.action === 'buy' ? '買入' : '賣出'}
+                      </span>
+                      <button
+                        onClick={() => cancelOrder(order.id)}
+                        className="text-red-600 hover:text-red-800 text-xs font-semibold"
+                      >
+                        取消
+                      </button>
+                    </div>
+                    <p className="text-sm font-semibold">
+                      {order.amount.toFixed(6)} BTC @ {order.limitPrice.toFixed(2)}
+                    </p>
+                    <p className="text-xs text-gray-600 mt-1">
+                      {order.timestamp}
+                    </p>
+                    <div className="mt-2 text-xs text-gray-500">
+                      {order.action === 'buy' 
+                        ? `等待市價降至 ${order.limitPrice.toFixed(2)} 或以下`
+                        : `等待市價升至 ${order.limitPrice.toFixed(2)} 或以上`}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* 訂單歷史 */}
           {orderHistory.length > 0 && (
             <div className="bg-white rounded-2xl p-6 border-2 border-gray-200">
@@ -482,7 +625,7 @@ const handleExecuteTrade = () => {
                         {order.action === 'buy' ? '買入' : '賣出'}
                       </span>
                       <span className="text-xs text-gray-500">
-                        {orderType === 'market' ? '市價' : '限價'}
+                        已成交
                       </span>
                     </div>
                     <p className="text-sm">
