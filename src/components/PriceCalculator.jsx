@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { useCryptoPrice } from '../hooks/useCryptoPrice'
-
 function PriceCalculator() {
   // 使用自定義 Hook 獲取即時價格
   const { prices, loading, error, lastUpdate, refresh } = useCryptoPrice(30000) // 每 30 秒更新
@@ -146,7 +145,6 @@ function PriceCalculator() {
           </div>
         </div>
       </div>
-
       {/* 購幣金額估算器 */}
       <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-8 border-2 border-blue-200">
         <div className="flex items-center mb-6">

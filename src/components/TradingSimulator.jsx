@@ -175,7 +175,6 @@ const handleExecuteTrade = () => {
           </div>
         )}
       </div>
-
       {/* 說明卡片 */}
       <div className="grid md:grid-cols-2 gap-4 mb-8">
         <InfoBox type="info" title="市價單">

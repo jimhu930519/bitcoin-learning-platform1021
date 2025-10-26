@@ -8,6 +8,12 @@ import TradingSimulator from './components/TradingSimulator'
 
 function App() {
   const [activeTab, setActiveTab] = useState('intro')
+  const [expandedCard, setExpandedCard] = useState(null)
+
+  // 切換卡片展開狀態
+  const toggleCard = (cardId) => {
+    setExpandedCard(expandedCard === cardId ? null : cardId)
+  }
 
   const tabs = [
     { id: 'intro', label: '比特幣簡介', icon: '₿' },
@@ -68,28 +74,198 @@ function App() {
           透過互動式學習，理解區塊鏈技術與比特幣的核心原理
         </p>
         
-        {/* 白色高對比卡片 */}
+        {/* 可展開教育式卡片 */}
         <div className="grid md:grid-cols-2 gap-6 mt-8">
-          <div className="bg-white rounded-2xl p-6 shadow-xl">
-            <div className="flex items-center mb-3">
-              <span className="text-3xl mr-3">💡</span>
-              <h3 className="text-2xl font-bold text-gray-800">什麼是比特幣？</h3>
+          {/* 卡片 1：什麼是比特幣？ */}
+          <div className="bg-white rounded-2xl shadow-xl overflow-hidden transition-all duration-300">
+            <button
+              onClick={() => toggleCard('bitcoin')}
+              className="w-full p-6 text-left hover:bg-gray-50 transition-colors"
+            >
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center">
+                  <span className="text-3xl mr-3">💡</span>
+                  <h3 className="text-2xl font-bold text-gray-800">什麼是比特幣？</h3>
+                </div>
+                <span className="text-2xl text-bitcoin-orange transition-transform duration-300" style={{ transform: expandedCard === 'bitcoin' ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
+              </div>
+              <p className="text-lg leading-relaxed text-gray-700">
+                比特幣是一種數位貨幣，就像你手機裡的數位錢包。
+              </p>
+            </button>
+            
+            {/* 展開的詳細內容 */}
+            <div className={`transition-all duration-500 ease-in-out overflow-hidden ${
+              expandedCard === 'bitcoin' ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
+            }`}>
+              <div className="px-6 pb-6 space-y-4 border-t-2 border-gray-100 pt-4">
+                <div className="bg-blue-50 rounded-xl p-4 border-l-4 border-blue-500">
+                  <h4 className="font-bold text-gray-800 mb-2 flex items-center">
+                    <span className="mr-2">🔰</span> 給完全新手的說明
+                  </h4>
+                  <p className="text-gray-700 leading-relaxed">
+                    想像一下，你有一個數位錢包，裡面的錢<strong>不是由銀行管理</strong>，而是由<strong>全世界的電腦一起記帳</strong>。這就是比特幣！
+                  </p>
+                </div>
+
+                <div className="bg-yellow-50 rounded-xl p-4 border-l-4 border-yellow-500">
+                  <h4 className="font-bold text-gray-800 mb-2 flex items-center">
+                    <span className="mr-2">📝</span> 什麼是「去中心化」？
+                  </h4>
+                  <div className="text-gray-700 leading-relaxed space-y-2">
+                    <p><strong>傳統銀行（中心化）：</strong></p>
+                    <p className="pl-4">• 所有交易由銀行記帳</p>
+                    <p className="pl-4">• 銀行說了算</p>
+                    <p className="pl-4">• 銀行可能倒閉</p>
+                    
+                    <p className="mt-2"><strong>比特幣（去中心化）：</strong></p>
+                    <p className="pl-4">• 全世界的電腦一起記帳</p>
+                    <p className="pl-4">• 沒有任何人可以控制</p>
+                    <p className="pl-4">• 更安全、更透明</p>
+                  </div>
+                </div>
+
+                <div className="bg-purple-50 rounded-xl p-4 border-l-4 border-purple-500">
+                  <h4 className="font-bold text-gray-800 mb-2 flex items-center">
+                    <span className="mr-2">👤</span> 誰是「中本聰」？
+                  </h4>
+                  <p className="text-gray-700 leading-relaxed">
+                    中本聰是在 2009 年創造比特幣的神秘人物（或團隊）。至今沒有人知道他的真實身分，就像蒙面俠一樣！他創造比特幣後就消失了，留下這個改變世界的發明。
+                  </p>
+                </div>
+
+                <div className="bg-green-50 rounded-xl p-4 border-l-4 border-green-500">
+                  <h4 className="font-bold text-gray-800 mb-2 flex items-center">
+                    <span className="mr-2">💰</span> 為什麼只有 2100 萬枚？
+                  </h4>
+                  <p className="text-gray-700 leading-relaxed">
+                    就像地球上的黃金數量有限一樣，比特幣也設定了上限。<strong>永遠只會有 2100 萬枚</strong>，不會再多了！這讓比特幣很稀有，也是它保值的原因之一。
+                  </p>
+                </div>
+
+                <div className="bg-orange-50 rounded-xl p-4 border-l-4 border-orange-500">
+                  <h4 className="font-bold text-gray-800 mb-2 flex items-center">
+                    <span className="mr-2">🔗</span> 什麼是「區塊鏈」？
+                  </h4>
+                  <p className="text-gray-700 leading-relaxed">
+                    想像一本<strong>永遠不能塗改的帳本</strong>，每一頁（區塊）都記錄了交易，而且頁與頁之間用鎖鏈連在一起。一旦寫上去，就無法修改或刪除。這就是區塊鏈！
+                  </p>
+                </div>
+              </div>
             </div>
-            <p className="text-lg leading-relaxed text-gray-700">
-              比特幣（Bitcoin, BTC）是一種去中心化的數位貨幣，由中本聰在 2009 年創建。
-              它使用區塊鏈技術記錄所有交易，總量限制為 2100 萬枚。
-            </p>
           </div>
           
-          <div className="bg-white rounded-2xl p-6 shadow-xl">
-            <div className="flex items-center mb-3">
-              <span className="text-3xl mr-3">🎯</span>
-              <h3 className="text-2xl font-bold text-gray-800">為何稱為數位黃金？</h3>
+          {/* 卡片 2：為何稱為數位黃金？ */}
+          <div className="bg-white rounded-2xl shadow-xl overflow-hidden transition-all duration-300">
+            <button
+              onClick={() => toggleCard('gold')}
+              className="w-full p-6 text-left hover:bg-gray-50 transition-colors"
+            >
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center">
+                  <span className="text-3xl mr-3">🎯</span>
+                  <h3 className="text-2xl font-bold text-gray-800">為何稱為數位黃金？</h3>
+                </div>
+                <span className="text-2xl text-bitcoin-orange transition-transform duration-300" style={{ transform: expandedCard === 'gold' ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
+              </div>
+              <p className="text-lg leading-relaxed text-gray-700">
+                因為比特幣和黃金有很多相似之處！
+              </p>
+            </button>
+            
+            {/* 展開的詳細內容 */}
+            <div className={`transition-all duration-500 ease-in-out overflow-hidden ${
+              expandedCard === 'gold' ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
+            }`}>
+              <div className="px-6 pb-6 space-y-4 border-t-2 border-gray-100 pt-4">
+                <div className="bg-yellow-50 rounded-xl p-4 border-l-4 border-yellow-500">
+                  <h4 className="font-bold text-gray-800 mb-2 flex items-center">
+                    <span className="mr-2">✨</span> 黃金的特性
+                  </h4>
+                  <div className="text-gray-700 leading-relaxed space-y-1">
+                    <p>• <strong>稀缺性：</strong>地球上黃金數量有限</p>
+                    <p>• <strong>難以偽造：</strong>真金不怕火煉</p>
+                    <p>• <strong>保值性：</strong>幾千年來都很值錢</p>
+                    <p>• <strong>全球認可：</strong>到哪都有價值</p>
+                  </div>
+                </div>
+
+                <div className="bg-orange-50 rounded-xl p-4 border-l-4 border-orange-500">
+                  <h4 className="font-bold text-gray-800 mb-2 flex items-center">
+                    <span className="mr-2">₿</span> 比特幣的相似之處
+                  </h4>
+                  <div className="text-gray-700 leading-relaxed space-y-1">
+                    <p>• <strong>稀缺性：</strong>只有 2100 萬枚，永不增加</p>
+                    <p>• <strong>難以偽造：</strong>密碼學保護，無法複製</p>
+                    <p>• <strong>保值性：</strong>不受政府控制</p>
+                    <p>• <strong>全球認可：</strong>全世界都能使用</p>
+                  </div>
+                </div>
+
+                <div className="bg-blue-50 rounded-xl p-4 border-l-4 border-blue-500">
+                  <h4 className="font-bold text-gray-800 mb-2 flex items-center">
+                    <span className="mr-2">📊</span> 對比表格
+                  </h4>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-gray-700">
+                      <thead className="bg-gray-100">
+                        <tr>
+                          <th className="p-2 text-left">特性</th>
+                          <th className="p-2 text-left">黃金</th>
+                          <th className="p-2 text-left">比特幣</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr className="border-t">
+                          <td className="p-2 font-semibold">總量</td>
+                          <td className="p-2">有限（地球上）</td>
+                          <td className="p-2">2100 萬枚</td>
+                        </tr>
+                        <tr className="border-t">
+                          <td className="p-2 font-semibold">分割</td>
+                          <td className="p-2">可以融化切割</td>
+                          <td className="p-2">可分到小數點 8 位</td>
+                        </tr>
+                        <tr className="border-t">
+                          <td className="p-2 font-semibold">攜帶</td>
+                          <td className="p-2">很重，不方便</td>
+                          <td className="p-2">數位的，超輕鬆</td>
+                        </tr>
+                        <tr className="border-t">
+                          <td className="p-2 font-semibold">轉帳</td>
+                          <td className="p-2">需要實體運送</td>
+                          <td className="p-2">幾分鐘內全球轉帳</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div className="bg-green-50 rounded-xl p-4 border-l-4 border-green-500">
+                  <h4 className="font-bold text-gray-800 mb-2 flex items-center">
+                    <span className="mr-2">🛡️</span> 如何對抗通膨？
+                  </h4>
+                  <p className="text-gray-700 leading-relaxed mb-2">
+                    <strong>通膨</strong>就是錢越來越不值錢。例如 10 年前 100 元可以買的東西，現在可能要 150 元。
+                  </p>
+                  <p className="text-gray-700 leading-relaxed">
+                    因為比特幣<strong>數量固定</strong>，政府無法像印鈔票一樣增加比特幣數量，所以它能保持價值，就像黃金一樣！
+                  </p>
+                </div>
+
+                <div className="bg-purple-50 rounded-xl p-4 border-l-4 border-purple-500">
+                  <h4 className="font-bold text-gray-800 mb-2 flex items-center">
+                    <span className="mr-2">💡</span> 生活化比喻
+                  </h4>
+                  <p className="text-gray-700 leading-relaxed">
+                    <strong>傳統貨幣：</strong>就像遊樂園的代幣，遊樂園想印多少就印多少，代幣會越來越不值錢。
+                  </p>
+                  <p className="text-gray-700 leading-relaxed mt-2">
+                    <strong>比特幣：</strong>就像限量版的收藏卡，只有 2100 萬張，永遠不會再印，所以會越來越珍貴！
+                  </p>
+                </div>
+              </div>
             </div>
-            <p className="text-lg leading-relaxed text-gray-700">
-              如同黃金稀缺且難以偽造，比特幣總量固定、無法篡改，
-              被視為對抗通膨的避險工具。
-            </p>
           </div>
         </div>
 
