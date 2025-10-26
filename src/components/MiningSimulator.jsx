@@ -204,83 +204,53 @@ function MiningSimulator() {
         </p>
       </div>
 
-      {/* 教育性卡片 */}
+      {/* 教育性卡片 - 直接顯示 */}
       <div className="grid md:grid-cols-3 gap-4 mb-8">
-        {/* 卡片1 */}
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden border-2 border-gray-200">
-          <button
-            onClick={() => setExpandedInfo(expandedInfo === 'why' ? null : 'why')}
-            className="w-full p-4 text-left hover:bg-gray-50 transition-colors"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <span className="text-2xl mr-2">❓</span>
-                <h4 className="font-bold text-gray-800">為什麼要挖礦？</h4>
-              </div>
-              <span className="text-bitcoin-orange">
-                {expandedInfo === 'why' ? '▲' : '▼'}
-              </span>
+        {/* 卡片1 - 為什麼要挖礦 */}
+        <div className="bg-white rounded-xl shadow-lg border-2 border-gray-200">
+          <div className="p-4">
+            <div className="flex items-center mb-3">
+              <span className="text-2xl mr-2">❓</span>
+              <h4 className="font-bold text-gray-800">為什麼要挖礦？</h4>
             </div>
-          </button>
-          {expandedInfo === 'why' && (
-            <div className="px-4 pb-4 text-sm text-gray-700 border-t pt-3">
+            <div className="text-sm text-gray-700 space-y-2">
               <p className="mb-2">挖礦有兩個目的：</p>
-              <p className="mb-1">1️⃣ <strong>驗證交易：</strong>確保沒有人作弊</p>
+              <p>1️⃣ <strong>驗證交易：</strong>確保沒有人作弊</p>
               <p>2️⃣ <strong>保護安全：</strong>讓駭客無法修改歷史記錄</p>
             </div>
-          )}
+          </div>
         </div>
 
-        {/* 卡片2 */}
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden border-2 border-gray-200">
-          <button
-            onClick={() => setExpandedInfo(expandedInfo === 'real' ? null : 'real')}
-            className="w-full p-4 text-left hover:bg-gray-50 transition-colors"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <span className="text-2xl mr-2">🌍</span>
-                <h4 className="font-bold text-gray-800">真實比特幣難度</h4>
-              </div>
-              <span className="text-bitcoin-orange">
-                {expandedInfo === 'real' ? '▲' : '▼'}
-              </span>
+        {/* 卡片2 - 真實比特幣難度 */}
+        <div className="bg-white rounded-xl shadow-lg border-2 border-gray-200">
+          <div className="p-4">
+            <div className="flex items-center mb-3">
+              <span className="text-2xl mr-2">🌍</span>
+              <h4 className="font-bold text-gray-800">真實比特幣難度</h4>
             </div>
-          </button>
-          {expandedInfo === 'real' && (
-            <div className="px-4 pb-4 text-sm text-gray-700 border-t pt-3">
+            <div className="text-sm text-gray-700 space-y-2">
               <p className="mb-2">真實比特幣需要：</p>
-              <p className="mb-1">🔢 開頭約 <strong>19個0</strong></p>
-              <p className="mb-1">⏱️ 全球礦機每秒嘗試 <strong>數兆次</strong></p>
+              <p>🔢 開頭約 <strong>19個0</strong></p>
+              <p>⏱️ 全球礦機每秒嘗試 <strong>數兆次</strong></p>
               <p>💡 平均 <strong>10分鐘</strong>找到一個區塊</p>
             </div>
-          )}
+          </div>
         </div>
 
-        {/* 卡片3 */}
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden border-2 border-gray-200">
-          <button
-            onClick={() => setExpandedInfo(expandedInfo === 'power' ? null : 'power')}
-            className="w-full p-4 text-left hover:bg-gray-50 transition-colors"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <span className="text-2xl mr-2">⚡</span>
-                <h4 className="font-bold text-gray-800">為何耗電？</h4>
-              </div>
-              <span className="text-bitcoin-orange">
-                {expandedInfo === 'power' ? '▲' : '▼'}
-              </span>
+        {/* 卡片3 - 為何耗電 */}
+        <div className="bg-white rounded-xl shadow-lg border-2 border-gray-200">
+          <div className="p-4">
+            <div className="flex items-center mb-3">
+              <span className="text-2xl mr-2">⚡</span>
+              <h4 className="font-bold text-gray-800">為何耗電？</h4>
             </div>
-          </button>
-          {expandedInfo === 'power' && (
-            <div className="px-4 pb-4 text-sm text-gray-700 border-t pt-3">
+            <div className="text-sm text-gray-700 space-y-2">
               <p className="mb-2">因為需要：</p>
-              <p className="mb-1">🖥️ 大量電腦不停運算</p>
-              <p className="mb-1">🔢 每秒嘗試數百萬次</p>
+              <p>🖥️ 大量電腦不停運算</p>
+              <p>🔢 每秒嘗試數百萬次</p>
               <p>⚡ 比特幣全網耗電約等於一個中型國家！</p>
             </div>
-          )}
+          </div>
         </div>
       </div>
 
