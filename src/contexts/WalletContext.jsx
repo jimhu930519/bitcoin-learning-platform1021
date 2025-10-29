@@ -62,26 +62,29 @@ export const WalletProvider = ({ children }) => {
   }, [])
 
   // 執行轉帳
-  const transfer = useCallback((fromWalletId, toAddress, amount, coin, chain) => {
+  const transfer = useCallback((fromWalletId, toAddress, amount, coin, chain, fee = 0) => {
     const fromWallet = getWallet(fromWalletId)
     const toWalletId = fromWalletId === 'A' ? 'B' : 'A'
     const toWallet = getWallet(toWalletId)
-    
-    // 檢查餘額
-    if (fromWallet.balance[coin] < amount) {
+
+    // 計算總支出（轉帳金額 + 手續費）
+    const totalCost = amount + fee
+
+    // 檢查餘額（需要包含手續費）
+    if (fromWallet.balance[coin] < totalCost) {
       return {
         success: false,
-        message: '餘額不足！'
+        message: `餘額不足！需要 ${totalCost.toFixed(4)} ${coin}（含手續費），但只有 ${fromWallet.balance[coin]} ${coin}`
       }
     }
 
     // 檢查地址和鏈是否匹配
     const correctAddress = getCorrectAddress(toWallet, coin, chain)
-    
+
     if (toAddress !== correctAddress) {
-      // 地址錯誤 - 資產消失
+      // 地址錯誤 - 資產消失（包括手續費）
       updateWalletBalance(fromWalletId, {
-        [coin]: fromWallet.balance[coin] - amount
+        [coin]: fromWallet.balance[coin] - totalCost
       })
 
       const transaction = {
@@ -89,6 +92,7 @@ export const WalletProvider = ({ children }) => {
         from: fromWallet.name,
         to: '未知地址 ❌',
         amount,
+        fee,
         coin,
         chain,
         status: 'lost',
@@ -102,12 +106,12 @@ export const WalletProvider = ({ children }) => {
       }
     }
 
-    // 正確轉帳 - 從發送方扣除
+    // 正確轉帳 - 從發送方扣除（轉帳金額 + 手續費）
     updateWalletBalance(fromWalletId, {
-      [coin]: fromWallet.balance[coin] - amount
+      [coin]: fromWallet.balance[coin] - totalCost
     })
-    
-    // 增加到接收方
+
+    // 增加到接收方（只有轉帳金額，不包含手續費）
     updateWalletBalance(toWalletId, {
       [coin]: toWallet.balance[coin] + amount
     })
@@ -117,6 +121,7 @@ export const WalletProvider = ({ children }) => {
       from: fromWallet.name,
       to: toWallet.name,
       amount,
+      fee,
       coin,
       chain,
       status: 'success',
@@ -126,7 +131,7 @@ export const WalletProvider = ({ children }) => {
 
     return {
       success: true,
-      message: '✅ 轉帳成功！'
+      message: `✅ 轉帳成功！已發送 ${amount} ${coin}，手續費 ${fee} ${coin}`
     }
   }, [getWallet, getCorrectAddress, updateWalletBalance])
 

@@ -7,9 +7,9 @@ import { InfoBox } from './shared/InfoBox'
 
 function TradingSimulator() {
   const { walletA, walletB, executeTrade, getWallet } = useWallet()
-  
+
   // 使用真實價格數據
-  const { prices, loading: priceLoading, error: priceError, refresh } = useCryptoPrice(30000)
+  const { prices, loading: priceLoading, error: priceError, refresh, priceChange24h } = useCryptoPrice(30000)
   
   // 交易設定
   const [tradingPair, setTradingPair] = useState('BTC/USDT')
@@ -49,6 +49,29 @@ function TradingSimulator() {
   // 獲取當前錢包餘額
   const getCurrentWallet = () => {
     return getWallet(selectedWallet)
+  }
+
+  // 計算投資組合總價值 (以 USDT 計算)
+  const calculatePortfolioValue = () => {
+    const btcValue = balance.BTC * prices.btc.usd
+    return btcValue + balance.USDT + (balance.TWD / 32.5) // TWD 轉換為 USDT
+  }
+
+  // 快速設置交易數量
+  const setQuickAmount = (percentage) => {
+    if (tradeAction === 'buy') {
+      // 買入：根據可用資金計算可買數量
+      const availableFunds = balance[tradingPair === 'BTC/USDT' ? 'USDT' : 'TWD']
+      const price = orderType === 'limit' && limitPrice ? parseFloat(limitPrice) : getCurrentPrice()
+      if (price > 0) {
+        const maxBTC = (availableFunds * percentage) / (price * (1 + TRADING_CONFIG.FEE_RATE))
+        setAmount(maxBTC.toFixed(6))
+      }
+    } else {
+      // 賣出：根據持有 BTC 數量
+      const maxBTC = balance.BTC * percentage
+      setAmount(maxBTC.toFixed(6))
+    }
   }
 
   // 監控價格變化，自動執行掛單
@@ -267,7 +290,7 @@ function TradingSimulator() {
       </div>
 
       {/* 說明卡片 */}
-      <div className="grid md:grid-cols-2 gap-4 mb-8">
+      <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 mb-8">
         <InfoBox type="info" title="市價單">
           以當前市場價格立即成交。優點是成交快速，缺點是無法控制成交價格。
         </InfoBox>
@@ -276,21 +299,30 @@ function TradingSimulator() {
         </InfoBox>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
         {/* 左側：交易表單 */}
         <div className="lg:col-span-2">
           {/* 當前價格顯示 */}
           <div className="bg-gradient-to-r from-bitcoin-orange to-orange-600 text-white rounded-2xl p-6 mb-6">
             <div className="flex justify-between items-center">
-              <div>
-                <p className="text-sm opacity-80 mb-1">
-                  當前價格 ({tradingPair})
-                  {priceLoading && <span className="ml-2 animate-pulse">更新中...</span>}
-                </p>
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-2">
+                  <p className="text-sm opacity-80">
+                    當前價格 ({tradingPair})
+                  </p>
+                  {priceChange24h !== null && (
+                    <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold ${
+                      priceChange24h >= 0 ? 'bg-green-500' : 'bg-red-500'
+                    }`}>
+                      {priceChange24h >= 0 ? '▲' : '▼'} {Math.abs(priceChange24h).toFixed(2)}%
+                    </div>
+                  )}
+                  {priceLoading && <span className="text-xs animate-pulse">更新中...</span>}
+                </div>
                 <p className="text-4xl font-bold">
                   {currentPrice > 0 ? (
-                    tradingPair === 'BTC/USDT' 
-                      ? `$${currentPrice.toFixed(2)}` 
+                    tradingPair === 'BTC/USDT'
+                      ? `$${currentPrice.toFixed(2)}`
                       : `NT$${currentPrice.toFixed(0)}`
                   ) : (
                     <span className="text-2xl">載入中...</span>
@@ -307,7 +339,7 @@ function TradingSimulator() {
           {/* 選擇錢包 */}
           <div className="mb-6">
             <label className="block text-gray-700 font-bold mb-3">選擇錢包</label>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <button
                 onClick={() => setSelectedWallet('A')}
                 className={`p-4 rounded-xl border-2 transition-all ${
@@ -336,7 +368,7 @@ function TradingSimulator() {
           {/* 交易對選擇 */}
           <div className="mb-6">
             <label className="block text-gray-700 font-bold mb-3">交易對</label>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <button
                 onClick={() => setTradingPair('BTC/USDT')}
                 className={`p-4 rounded-xl border-2 transition-all ${
@@ -363,7 +395,7 @@ function TradingSimulator() {
           {/* 訂單類型 */}
           <div className="mb-6">
             <label className="block text-gray-700 font-bold mb-3">訂單類型</label>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <button
                 onClick={() => setOrderType('market')}
                 className={`p-4 rounded-xl border-2 transition-all ${
@@ -392,7 +424,7 @@ function TradingSimulator() {
           {/* 買入/賣出 */}
           <div className="mb-6">
             <label className="block text-gray-700 font-bold mb-3">交易方向</label>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <button
                 onClick={() => setTradeAction('buy')}
                 className={`p-4 rounded-xl border-2 transition-all ${
@@ -431,8 +463,41 @@ function TradingSimulator() {
               disabled={priceLoading || currentPrice === 0}
               className="w-full px-6 py-4 border-2 border-gray-300 rounded-xl focus:border-bitcoin-orange focus:outline-none text-xl disabled:bg-gray-100"
             />
+
+            {/* 快速金額按鈕 */}
+            <div className="flex gap-2 mt-3">
+              <button
+                onClick={() => setQuickAmount(0.25)}
+                disabled={priceLoading || currentPrice === 0}
+                className="flex-1 bg-blue-100 hover:bg-blue-200 text-blue-700 py-2 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50"
+              >
+                25%
+              </button>
+              <button
+                onClick={() => setQuickAmount(0.5)}
+                disabled={priceLoading || currentPrice === 0}
+                className="flex-1 bg-green-100 hover:bg-green-200 text-green-700 py-2 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50"
+              >
+                50%
+              </button>
+              <button
+                onClick={() => setQuickAmount(0.75)}
+                disabled={priceLoading || currentPrice === 0}
+                className="flex-1 bg-yellow-100 hover:bg-yellow-200 text-yellow-700 py-2 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50"
+              >
+                75%
+              </button>
+              <button
+                onClick={() => setQuickAmount(1)}
+                disabled={priceLoading || currentPrice === 0}
+                className="flex-1 bg-orange-100 hover:bg-orange-200 text-orange-700 py-2 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50"
+              >
+                全部
+              </button>
+            </div>
+
             <p className="text-sm text-gray-600 mt-2">
-              可用: {tradeAction === 'buy' 
+              可用: {tradeAction === 'buy'
                 ? `${balance[tradingPair === 'BTC/USDT' ? 'USDT' : 'TWD'].toFixed(2)} ${tradingPair === 'BTC/USDT' ? 'USDT' : 'TWD'}`
                 : `${balance.BTC} BTC`}
             </p>
@@ -530,9 +595,30 @@ function TradingSimulator() {
             <h3 className="text-xl font-bold text-gray-800 mb-4">
               💼 錢包 {selectedWallet} 餘額
             </h3>
+
+            {/* 投資組合總價值 */}
+            {prices.btc.usd > 0 && (
+              <div className="bg-gradient-to-r from-purple-100 to-indigo-100 rounded-lg p-4 mb-3 border-2 border-purple-300">
+                <p className="text-xs text-gray-600 mb-1">投資組合總價值</p>
+                <p className="text-2xl font-bold text-purple-700">
+                  ${calculatePortfolioValue().toFixed(2)} USDT
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  ≈ NT${(calculatePortfolioValue() * 32.5).toFixed(0)}
+                </p>
+              </div>
+            )}
+
             <div className="space-y-3">
               <div className="bg-white rounded-lg p-4">
-                <p className="text-sm text-gray-600">BTC</p>
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-sm text-gray-600">BTC</p>
+                  {prices.btc.usd > 0 && (
+                    <p className="text-xs text-gray-500">
+                      ≈ ${(balance.BTC * prices.btc.usd).toFixed(2)}
+                    </p>
+                  )}
+                </div>
                 <p className="text-2xl font-bold text-bitcoin-orange">
                   {balance.BTC.toFixed(6)}
                 </p>
@@ -547,6 +633,9 @@ function TradingSimulator() {
                 <p className="text-sm text-gray-600">TWD</p>
                 <p className="text-2xl font-bold text-blue-600">
                   NT${balance.TWD.toFixed(0)}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  ≈ ${(balance.TWD / 32.5).toFixed(2)} USDT
                 </p>
               </div>
             </div>

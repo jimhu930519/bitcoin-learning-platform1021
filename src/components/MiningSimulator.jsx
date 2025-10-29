@@ -19,6 +19,12 @@ function MiningSimulator() {
   const [expandedInfo, setExpandedInfo] = useState(null)
   const [showReward, setShowReward] = useState(false)
   const [showFieldHelp, setShowFieldHelp] = useState(null)
+  const [isPaused, setIsPaused] = useState(false)
+  const [estimatedTime, setEstimatedTime] = useState(null)
+  const [showEducation, setShowEducation] = useState(false)
+  const [showRewardInfo, setShowRewardInfo] = useState(false)
+  const [showComparison, setShowComparison] = useState(false)
+  const [showSuccessDetail, setShowSuccessDetail] = useState(false)
   const [miningReward, setMiningReward] = useState({
     blockReward: 3.125,
     transactionFees: 0,
@@ -28,9 +34,11 @@ function MiningSimulator() {
   
   const miningRef = useRef({
     shouldStop: false,
+    isPaused: false,
     currentAttempts: 0,
     startTime: null,
-    lastUpdateTime: null
+    lastUpdateTime: null,
+    pausedTime: 0
   })
 
   // 計算區塊的 Hash
@@ -62,6 +70,13 @@ function MiningSimulator() {
     }
   }, [blockNumber, transactions, previousHash, nonce, difficulty, isMining, calculateHash, checkDifficulty])
 
+  // 計算預估時間
+  const calculateEstimatedTime = useCallback(() => {
+    const avgAttempts = Math.pow(16, difficulty)
+    const estimatedSeconds = avgAttempts / 1000 // 假設每秒 1000 次
+    setEstimatedTime(estimatedSeconds)
+  }, [difficulty])
+
   // 自動挖礦 - 加入視覺化
   const startMining = useCallback(async () => {
     setIsMining(true)
@@ -69,32 +84,46 @@ function MiningSimulator() {
     setSuccess(false)
     setElapsedTime(0)
     setRecentAttempts([])
+    setIsPaused(false)
     miningRef.current.shouldStop = false
+    miningRef.current.isPaused = false
     miningRef.current.currentAttempts = 0
     miningRef.current.startTime = Date.now()
     miningRef.current.lastUpdateTime = Date.now()
+    miningRef.current.pausedTime = 0
+
+    // 計算預估時間
+    calculateEstimatedTime()
     
     let currentNonce = 0
     let found = false
     
     const processBatch = async () => {
-      const batchSize = 100
+      // 動態調整批次大小：難度越高，批次越大
+      const batchSize = difficulty <= 3 ? 100 : difficulty === 4 ? 500 : 1000
       const batchStartTime = Date.now()
-      
+
+      // 檢查是否暫停
+      while (miningRef.current.isPaused && !miningRef.current.shouldStop) {
+        await new Promise(resolve => setTimeout(resolve, 100))
+      }
+
       for (let i = 0; i < batchSize && !found && !miningRef.current.shouldStop; i++) {
         const testHash = await calculateHash(blockNumber, transactions, previousHash, currentNonce)
         miningRef.current.currentAttempts++
         
-        // 加入最近嘗試列表（只保留最新10個）
-        setRecentAttempts(prev => {
-          const newAttempt = {
-            nonce: currentNonce,
-            hash: testHash,
-            success: checkDifficulty(testHash),
-            timestamp: Date.now()
-          }
-          return [newAttempt, ...prev].slice(0, 10)
-        })
+        // 只在每 50 次嘗試時更新一次最近嘗試列表（優化性能）
+        if (i % 50 === 0 || checkDifficulty(testHash)) {
+          setRecentAttempts(prev => {
+            const newAttempt = {
+              nonce: currentNonce,
+              hash: testHash,
+              success: checkDifficulty(testHash),
+              timestamp: Date.now()
+            }
+            return [newAttempt, ...prev].slice(0, 10)
+          })
+        }
         
         if (checkDifficulty(testHash)) {
           found = true
@@ -151,12 +180,36 @@ function MiningSimulator() {
     if (!found && !miningRef.current.shouldStop) {
       setIsMining(false)
     }
-  }, [blockNumber, transactions, previousHash, difficulty, calculateHash, checkDifficulty])
+  }, [blockNumber, transactions, previousHash, difficulty, calculateHash, checkDifficulty, calculateEstimatedTime])
+
+  // 暫停/繼續挖礦
+  const togglePause = useCallback(() => {
+    if (isPaused) {
+      // 繼續
+      miningRef.current.isPaused = false
+      setIsPaused(false)
+    } else {
+      // 暫停
+      miningRef.current.isPaused = true
+      setIsPaused(true)
+    }
+  }, [isPaused])
 
   // 停止挖礦
   const stopMining = useCallback(() => {
     miningRef.current.shouldStop = true
+    miningRef.current.isPaused = false
     setIsMining(false)
+    setIsPaused(false)
+  }, [])
+
+  // 快速填入範例
+  const fillExample = useCallback((example) => {
+    setBlockNumber(example.blockNumber)
+    setTransactions(example.transactions)
+    setPreviousHash(example.previousHash)
+    setNonce(0)
+    setDifficulty(example.difficulty)
   }, [])
 
   // 重置
@@ -165,11 +218,14 @@ function MiningSimulator() {
     setAttempts(0)
     setSuccess(false)
     setIsMining(false)
+    setIsPaused(false)
     setHashesPerSecond(0)
     setElapsedTime(0)
     setRecentAttempts([])
     setShowReward(false)
+    setEstimatedTime(null)
     miningRef.current.currentAttempts = 0
+    miningRef.current.isPaused = false
   }, [])
 
   // 清理函數
@@ -204,68 +260,117 @@ function MiningSimulator() {
         </p>
       </div>
 
-      {/* 教育性卡片 - 直接顯示 */}
-      <div className="grid md:grid-cols-3 gap-4 mb-8">
-        {/* 卡片1 - 為什麼要挖礦 */}
-        <div className="bg-white rounded-xl shadow-lg border-2 border-gray-200">
-          <div className="p-4">
-            <div className="flex items-center mb-3">
-              <span className="text-2xl mr-2">❓</span>
-              <h4 className="font-bold text-gray-800">為什麼要挖礦？</h4>
-            </div>
-            <div className="text-sm text-gray-700 space-y-2">
-              <p className="mb-2">挖礦有兩個目的：</p>
-              <p>1️⃣ <strong>驗證交易：</strong>確保沒有人作弊</p>
-              <p>2️⃣ <strong>保護安全：</strong>讓駭客無法修改歷史記錄</p>
-            </div>
+      {/* 精簡的教育卡片 */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <div className="bg-blue-50 rounded-xl p-4 border-2 border-blue-200">
+          <div className="flex items-center mb-2">
+            <span className="text-2xl mr-2">❓</span>
+            <h4 className="font-bold text-gray-800">為什麼要挖礦？</h4>
           </div>
+          <p className="text-sm text-gray-700">驗證交易並保護區塊鏈安全</p>
         </div>
 
-        {/* 卡片2 - 真實比特幣難度 */}
-        <div className="bg-white rounded-xl shadow-lg border-2 border-gray-200">
-          <div className="p-4">
-            <div className="flex items-center mb-3">
-              <span className="text-2xl mr-2">🌍</span>
-              <h4 className="font-bold text-gray-800">真實比特幣難度</h4>
-            </div>
-            <div className="text-sm text-gray-700 space-y-2">
-              <p className="mb-2">真實比特幣需要：</p>
-              <p>🔢 開頭約 <strong>19個0</strong></p>
-              <p>⏱️ 全球礦機每秒嘗試 <strong>數兆次</strong></p>
-              <p>💡 平均 <strong>10分鐘</strong>找到一個區塊</p>
-            </div>
+        <div className="bg-orange-50 rounded-xl p-4 border-2 border-orange-200">
+          <div className="flex items-center mb-2">
+            <span className="text-2xl mr-2">🌍</span>
+            <h4 className="font-bold text-gray-800">真實比特幣</h4>
           </div>
+          <p className="text-sm text-gray-700">需要約 19個0，平均10分鐘</p>
         </div>
 
-        {/* 卡片3 - 為何耗電 */}
-        <div className="bg-white rounded-xl shadow-lg border-2 border-gray-200">
-          <div className="p-4">
-            <div className="flex items-center mb-3">
-              <span className="text-2xl mr-2">⚡</span>
-              <h4 className="font-bold text-gray-800">為何耗電？</h4>
-            </div>
-            <div className="text-sm text-gray-700 space-y-2">
-              <p className="mb-2">因為需要：</p>
-              <p>🖥️ 大量電腦不停運算</p>
-              <p>🔢 每秒嘗試數百萬次</p>
-              <p>⚡ 比特幣全網耗電約等於一個中型國家！</p>
-            </div>
+        <div className="bg-green-50 rounded-xl p-4 border-2 border-green-200">
+          <div className="flex items-center mb-2">
+            <span className="text-2xl mr-2">💰</span>
+            <h4 className="font-bold text-gray-800">當前獎勵</h4>
           </div>
+          <p className="text-sm text-gray-700">3.125 BTC + 手續費 ≈ $300k</p>
         </div>
       </div>
 
-      {/* 挖礦獎勵說明區 */}
-      <div className="bg-gradient-to-br from-yellow-50 via-orange-50 to-yellow-50 rounded-2xl p-6 sm:p-8 mb-8 border-2 border-yellow-300">
-        <div className="flex items-center mb-6">
-          <span className="text-4xl mr-3">🎁</span>
-          <h3 className="text-2xl font-bold text-gray-800">挖礦可以得到什麼獎勵？</h3>
-        </div>
+      {/* 詳細教育內容 - 可摺疊 */}
+      <div className="mb-6">
+        <button
+          onClick={() => setShowEducation(!showEducation)}
+          className="w-full bg-gradient-to-r from-purple-50 to-indigo-50 hover:from-purple-100 hover:to-indigo-100 rounded-xl p-4 border-2 border-purple-200 transition-all duration-300 flex items-center justify-between"
+        >
+          <div className="flex items-center">
+            <span className="text-2xl mr-3">📚</span>
+            <span className="font-bold text-gray-800 text-lg">詳細教學內容</span>
+          </div>
+          <span className="text-2xl text-purple-600 transition-transform duration-300" style={{ transform: showEducation ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+            ▼
+          </span>
+        </button>
 
-        <div className="grid md:grid-cols-2 gap-6 mb-6">
+        {showEducation && (
+          <div className="mt-4 space-y-4 animate-fadeIn">
+            <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="bg-white rounded-xl shadow-lg border-2 border-gray-200 p-4">
+                <div className="flex items-center mb-3">
+                  <span className="text-2xl mr-2">❓</span>
+                  <h4 className="font-bold text-gray-800">為什麼要挖礦？</h4>
+                </div>
+                <div className="text-sm text-gray-700 space-y-2">
+                  <p>1️⃣ <strong>驗證交易：</strong>確保沒有人作弊</p>
+                  <p>2️⃣ <strong>保護安全：</strong>讓駭客無法修改歷史記錄</p>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-lg border-2 border-gray-200 p-4">
+                <div className="flex items-center mb-3">
+                  <span className="text-2xl mr-2">🌍</span>
+                  <h4 className="font-bold text-gray-800">真實比特幣難度</h4>
+                </div>
+                <div className="text-sm text-gray-700 space-y-2">
+                  <p>🔢 開頭約 <strong>19個0</strong></p>
+                  <p>⏱️ 全球礦機每秒嘗試 <strong>數兆次</strong></p>
+                  <p>💡 平均 <strong>10分鐘</strong>找到一個區塊</p>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-lg border-2 border-gray-200 p-4">
+                <div className="flex items-center mb-3">
+                  <span className="text-2xl mr-2">⚡</span>
+                  <h4 className="font-bold text-gray-800">為何耗電？</h4>
+                </div>
+                <div className="text-sm text-gray-700 space-y-2">
+                  <p>🖥️ 大量電腦不停運算</p>
+                  <p>🔢 每秒嘗試數百萬次</p>
+                  <p>⚡ 耗電約等於一個中型國家</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 挖礦獎勵說明區 - 可摺疊 */}
+      <div className="mb-6">
+        <button
+          onClick={() => setShowRewardInfo(!showRewardInfo)}
+          className="w-full bg-gradient-to-r from-yellow-50 to-orange-50 hover:from-yellow-100 hover:to-orange-100 rounded-xl p-4 border-2 border-yellow-300 transition-all duration-300 flex items-center justify-between"
+        >
+          <div className="flex items-center">
+            <span className="text-2xl mr-3">🎁</span>
+            <span className="font-bold text-gray-800 text-lg">挖礦獎勵詳細說明</span>
+          </div>
+          <span className="text-2xl text-yellow-600 transition-transform duration-300" style={{ transform: showRewardInfo ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+            ▼
+          </span>
+        </button>
+
+        {showRewardInfo && (
+          <div className="mt-4 bg-gradient-to-br from-yellow-50 via-orange-50 to-yellow-50 rounded-2xl p-6 border-2 border-yellow-300 animate-fadeIn">
+            <div className="flex items-center mb-6">
+              <span className="text-4xl mr-3">🎁</span>
+              <h3 className="text-2xl font-bold text-gray-800">挖礦可以得到什麼獎勵？</h3>
+            </div>
+
+        <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 mb-6">
           {/* 當前獎勵 */}
           <div className="bg-white rounded-xl p-6 shadow-lg border-2 border-yellow-400">
             <h4 className="font-bold text-gray-800 mb-4 flex items-center text-lg">
-              <span className="mr-2">💰</span> 當前區塊獎勵（2024-2028）
+              <span className="mr-2">💰</span> 當前區塊獎勵（2024-2028 年）
             </h4>
             <div className="space-y-3">
               <div className="bg-yellow-50 rounded-lg p-4 border-l-4 border-yellow-500">
@@ -281,7 +386,7 @@ function MiningSimulator() {
               <div className="bg-orange-50 rounded-lg p-4 border-l-4 border-orange-500">
                 <p className="text-sm text-gray-600 mb-1">總計約</p>
                 <p className="text-3xl font-bold text-orange-600">3.3-3.6 BTC</p>
-                <p className="text-xs text-gray-500 mt-1">約 $320,000 - $350,000 美元</p>
+                <p className="text-xs text-gray-500 mt-1">約 $300,000 - $360,000 美元 (2025年價格)</p>
               </div>
             </div>
           </div>
@@ -309,7 +414,7 @@ function MiningSimulator() {
                 <span className="font-bold text-gray-800">6.25 BTC</span>
               </div>
               <div className="flex justify-between items-center p-2 bg-yellow-100 rounded border-2 border-yellow-500">
-                <span className="text-gray-800 font-semibold">2024-2028 ← 現在</span>
+                <span className="text-gray-800 font-semibold">2024-2028 ← 現在 (2025)</span>
                 <span className="font-bold text-yellow-600">3.125 BTC</span>
               </div>
               <div className="flex justify-between items-center p-2 bg-gray-100 rounded">
@@ -335,7 +440,7 @@ function MiningSimulator() {
           <h4 className="font-bold text-gray-800 mb-4 flex items-center text-lg">
             <span className="mr-2">🎯</span> 為什麼礦工願意花錢挖礦？
           </h4>
-          <div className="grid md:grid-cols-3 gap-4">
+          <div className="grid sm:grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
             <div className="bg-green-50 rounded-lg p-4 border-l-4 border-green-500">
               <div className="text-2xl mb-2">💰</div>
               <h5 className="font-bold text-gray-800 mb-2">1. 賺取比特幣</h5>
@@ -370,79 +475,69 @@ function MiningSimulator() {
             </p>
           </div>
         </div>
+          </div>
+        )}
       </div>
 
-      {/* 成功挖礦獎勵彈窗 */}
-      {showReward && (
-        <div className="mb-8 bg-gradient-to-r from-yellow-100 via-yellow-50 to-orange-100 rounded-2xl p-6 sm:p-8 border-4 border-yellow-400 shadow-2xl animate-pulse">
-          <div className="text-center mb-6">
-            <div className="text-6xl mb-4 animate-bounce">🎉</div>
-            <h3 className="text-3xl font-bold text-gray-800 mb-2">
-              恭喜！成功挖到區塊！
-            </h3>
-            <p className="text-gray-600">你獲得了豐厚的挖礦獎勵</p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-4 mb-6">
-            <div className="bg-white rounded-xl p-6 shadow-lg text-center">
-              <div className="text-3xl mb-2">💎</div>
-              <p className="text-sm text-gray-600 mb-2">區塊獎勵</p>
-              <p className="text-3xl font-bold text-yellow-600">
-                {miningReward.blockReward.toFixed(3)} BTC
-              </p>
-            </div>
-            <div className="bg-white rounded-xl p-6 shadow-lg text-center">
-              <div className="text-3xl mb-2">💸</div>
-              <p className="text-sm text-gray-600 mb-2">交易手續費</p>
-              <p className="text-3xl font-bold text-green-600">
-                {miningReward.transactionFees.toFixed(3)} BTC
-              </p>
-            </div>
-            <div className="bg-white rounded-xl p-6 shadow-lg text-center">
-              <div className="text-3xl mb-2">🏆</div>
-              <p className="text-sm text-gray-600 mb-2">總獎勵</p>
-              <p className="text-3xl font-bold text-orange-600">
-                {miningReward.totalReward.toFixed(3)} BTC
-              </p>
-            </div>
-          </div>
-
-          <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-6 text-white text-center">
-            <p className="text-lg mb-2">💵 總價值</p>
-            <p className="text-4xl font-bold">
-              ${miningReward.usdValue.toLocaleString('en-US', { maximumFractionDigits: 0 })} USD
-            </p>
-          </div>
-
-          <div className="mt-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
-            <p className="text-sm text-gray-700">
-              <strong>💡 真實情況：</strong>在實際的比特幣網絡中，成功挖到一個區塊需要極其強大的算力。
-              全球數百萬台礦機競爭，平均每 10 分鐘才有一個礦工成功。這就是為什麼挖礦需要專業設備和大量投資！
-            </p>
-          </div>
-        </div>
-      )}
 
       {/* 實時統計數據 */}
       {isMining && (
-        <div className="grid grid-cols-3 gap-4 mb-8">
-          <div className="bg-blue-50 rounded-xl p-4 border-2 border-blue-200">
-            <p className="text-sm text-gray-600 mb-1">每秒嘗試次數</p>
-            <p className="text-2xl font-bold text-blue-600">{hashesPerSecond.toLocaleString()}</p>
-            <p className="text-xs text-gray-500 mt-1">H/s</p>
+        <div className="mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+            <div className="bg-blue-50 rounded-xl p-4 border-2 border-blue-200">
+              <p className="text-sm text-gray-600 mb-1">每秒嘗試次數</p>
+              <p className="text-2xl font-bold text-blue-600">{hashesPerSecond.toLocaleString()}</p>
+              <p className="text-xs text-gray-500 mt-1">H/s</p>
+            </div>
+
+            <div className="bg-green-50 rounded-xl p-4 border-2 border-green-200">
+              <p className="text-sm text-gray-600 mb-1">總嘗試次數</p>
+              <p className="text-2xl font-bold text-green-600">{attempts.toLocaleString()}</p>
+              <p className="text-xs text-gray-500 mt-1">次</p>
+            </div>
+
+            <div className="bg-purple-50 rounded-xl p-4 border-2 border-purple-200">
+              <p className="text-sm text-gray-600 mb-1">已花費時間</p>
+              <p className="text-2xl font-bold text-purple-600">{elapsedTime.toFixed(1)}</p>
+              <p className="text-xs text-gray-500 mt-1">秒</p>
+            </div>
+
+            {estimatedTime && (
+              <div className="bg-orange-50 rounded-xl p-4 border-2 border-orange-200">
+                <p className="text-sm text-gray-600 mb-1">預估時間</p>
+                <p className="text-2xl font-bold text-orange-600">
+                  {estimatedTime < 60 ? `${estimatedTime.toFixed(1)}s` : `${(estimatedTime / 60).toFixed(1)}m`}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">平均值</p>
+              </div>
+            )}
           </div>
-          
-          <div className="bg-green-50 rounded-xl p-4 border-2 border-green-200">
-            <p className="text-sm text-gray-600 mb-1">總嘗試次數</p>
-            <p className="text-2xl font-bold text-green-600">{attempts.toLocaleString()}</p>
-            <p className="text-xs text-gray-500 mt-1">次</p>
-          </div>
-          
-          <div className="bg-purple-50 rounded-xl p-4 border-2 border-purple-200">
-            <p className="text-sm text-gray-600 mb-1">已花費時間</p>
-            <p className="text-2xl font-bold text-purple-600">{elapsedTime.toFixed(1)}</p>
-            <p className="text-xs text-gray-500 mt-1">秒</p>
-          </div>
+
+          {/* 進度條 */}
+          {estimatedTime && estimatedTime > 0 && (
+            <div className="bg-gray-200 rounded-full h-4 overflow-hidden">
+              <div
+                className="bg-gradient-to-r from-bitcoin-orange to-orange-600 h-full transition-all duration-300 flex items-center justify-end pr-2"
+                style={{ width: `${Math.min((elapsedTime / estimatedTime) * 100, 100)}%` }}
+              >
+                {elapsedTime / estimatedTime > 0.1 && (
+                  <span className="text-xs text-white font-bold">
+                    {Math.min(Math.round((elapsedTime / estimatedTime) * 100), 100)}%
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* 暫停狀態提示 */}
+          {isPaused && (
+            <div className="mt-4 bg-yellow-100 border-l-4 border-yellow-500 p-4 rounded animate-pulse">
+              <p className="text-yellow-800 font-semibold flex items-center">
+                <span className="mr-2">⏸️</span>
+                挖礦已暫停 - 點擊「繼續」按鈕恢復挖礦
+              </p>
+            </div>
+          )}
         </div>
       )}
 
@@ -486,8 +581,54 @@ function MiningSimulator() {
         </div>
       )}
 
+      {/* 快速填入範例 */}
+      <div className="mb-8 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl p-6 border-2 border-indigo-200">
+        <h3 className="font-bold text-gray-800 mb-4 text-xl flex items-center">
+          <span className="mr-2">⚡</span>
+          快速填入範例
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+          <button
+            onClick={() => fillExample({
+              blockNumber: 1,
+              transactions: 'Alice -> Bob: 1 BTC',
+              previousHash: '0000000000000000',
+              difficulty: 2
+            })}
+            disabled={isMining}
+            className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-4 py-3 rounded-xl transition-all duration-300 font-semibold shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            🟢 簡單範例 (2個0)
+          </button>
+          <button
+            onClick={() => fillExample({
+              blockNumber: 100,
+              transactions: 'Charlie -> David: 0.5 BTC, Eve -> Frank: 2 BTC',
+              previousHash: 'a1b2c3d4e5f6g7h8',
+              difficulty: 3
+            })}
+            disabled={isMining}
+            className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white px-4 py-3 rounded-xl transition-all duration-300 font-semibold shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            🟡 中等範例 (3個0)
+          </button>
+          <button
+            onClick={() => fillExample({
+              blockNumber: 1000,
+              transactions: 'Multiple transactions: Alice->Bob, Charlie->David, Eve->Frank',
+              previousHash: '00000a1b2c3d4e5f',
+              difficulty: 4
+            })}
+            disabled={isMining}
+            className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-4 py-3 rounded-xl transition-all duration-300 font-semibold shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            🔴 困難範例 (4個0)
+          </button>
+        </div>
+      </div>
+
       {/* 區塊資料區 */}
-      <div className="grid md:grid-cols-2 gap-6 mb-8">
+      <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 mb-8">
         <div>
           <label className="block text-gray-700 font-bold mb-2 flex items-center">
             <span className="mr-2">📦</span>
@@ -606,7 +747,7 @@ function MiningSimulator() {
       </div>
 
       {/* Nonce 和難度控制 */}
-      <div className="grid md:grid-cols-2 gap-6 mb-8">
+      <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 mb-8">
         <div>
           <label className="block text-gray-700 font-bold mb-2 flex items-center">
             <span className="mr-2">🎲</span>
@@ -742,23 +883,31 @@ function MiningSimulator() {
       </div>
 
       {/* 控制按鈕 */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <Button
           onClick={startMining}
           disabled={isMining}
           variant="primary"
         >
-          {isMining ? '⛏️ 挖礦中...' : '⛏️ 開始自動挖礦'}
+          {isMining ? '⛏️ 挖礦中...' : '⛏️ 開始挖礦'}
         </Button>
-        
+
+        <Button
+          onClick={togglePause}
+          disabled={!isMining}
+          variant="secondary"
+        >
+          {isPaused ? '▶️ 繼續' : '⏸️ 暫停'}
+        </Button>
+
         <Button
           onClick={stopMining}
           disabled={!isMining}
           variant="danger"
         >
-          ⏸️ 停止挖礦
+          ⏹️ 停止
         </Button>
-        
+
         <Button
           onClick={reset}
           disabled={isMining}
@@ -766,6 +915,289 @@ function MiningSimulator() {
         >
           🔄 重置
         </Button>
+      </div>
+
+      {/* 成功挖礦結果 - 緊湊型顯示 */}
+      {showReward && (
+        <div className="mb-6">
+          {/* 簡潔成功提示 */}
+          <div className="bg-gradient-to-r from-green-100 via-green-50 to-emerald-100 rounded-xl p-5 border-2 border-green-400">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center">
+                <div className="text-4xl mr-3">✅</div>
+                <div>
+                  <h3 className="text-xl font-bold text-gray-800">
+                    模擬挖礦成功！
+                  </h3>
+                  <p className="text-sm text-gray-600">難度 {difficulty} · {attempts.toLocaleString()} 次嘗試 · {elapsedTime.toFixed(2)}s</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowSuccessDetail(!showSuccessDetail)}
+                className="bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg border-2 border-green-300 transition-all duration-300 font-semibold text-sm flex items-center"
+              >
+                <span className="mr-2">{showSuccessDetail ? '隱藏' : '查看'}詳情</span>
+                <span className="transition-transform duration-300" style={{ transform: showSuccessDetail ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                  ▼
+                </span>
+              </button>
+            </div>
+
+            {/* 快速統計（一行顯示） */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <div className="bg-white rounded-lg p-2 border border-green-200">
+                <p className="text-xs text-gray-600">嘗試</p>
+                <p className="text-sm font-bold text-green-600">{attempts.toLocaleString()}</p>
+              </div>
+              <div className="bg-white rounded-lg p-2 border border-blue-200">
+                <p className="text-xs text-gray-600">時間</p>
+                <p className="text-sm font-bold text-blue-600">{elapsedTime.toFixed(2)}s</p>
+              </div>
+              <div className="bg-white rounded-lg p-2 border border-purple-200">
+                <p className="text-xs text-gray-600">算力</p>
+                <p className="text-sm font-bold text-purple-600">{hashesPerSecond.toLocaleString()} H/s</p>
+              </div>
+              <div className="bg-white rounded-lg p-2 border border-orange-200">
+                <p className="text-xs text-gray-600">假設獎勵</p>
+                <p className="text-sm font-bold text-orange-600">${(miningReward.usdValue / 1000).toFixed(0)}k</p>
+              </div>
+            </div>
+          </div>
+
+          {/* 展開的詳細內容 */}
+          {showSuccessDetail && (
+            <div className="mt-4 space-y-4 animate-fadeIn">
+
+          {/* 模擬 vs 真實對比 */}
+          <div className="bg-gradient-to-br from-orange-50 via-red-50 to-pink-50 rounded-2xl p-6 border-2 border-red-300">
+            <div className="flex items-center mb-4">
+              <span className="text-3xl mr-3">⚠️</span>
+              <h3 className="text-xl font-bold text-gray-800">
+                這只是模擬！真實挖礦完全不同
+              </h3>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6 mb-6">
+              {/* 你的模擬 */}
+              <div className="bg-white rounded-xl p-5 border-2 border-green-300">
+                <div className="flex items-center mb-4">
+                  <span className="text-2xl mr-2">🎮</span>
+                  <h4 className="font-bold text-gray-800">你的模擬挖礦</h4>
+                </div>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">難度:</span>
+                    <span className="font-semibold text-green-600">{difficulty} 個前導 0</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">嘗試次數:</span>
+                    <span className="font-semibold text-green-600">{attempts.toLocaleString()} 次</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">花費時間:</span>
+                    <span className="font-semibold text-green-600">{elapsedTime.toFixed(2)} 秒</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">設備:</span>
+                    <span className="font-semibold text-green-600">瀏覽器模擬</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">競爭對手:</span>
+                    <span className="font-semibold text-green-600">0 人</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 真實比特幣 */}
+              <div className="bg-gradient-to-br from-red-100 to-red-50 rounded-xl p-5 border-2 border-red-400">
+                <div className="flex items-center mb-4">
+                  <span className="text-2xl mr-2">🌍</span>
+                  <h4 className="font-bold text-gray-800">真實比特幣挖礦</h4>
+                </div>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">難度:</span>
+                    <span className="font-semibold text-red-600">約 19 個前導 0</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">嘗試次數:</span>
+                    <span className="font-semibold text-red-600">數兆兆次</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">花費時間:</span>
+                    <span className="font-semibold text-red-600">平均 10 分鐘</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">設備:</span>
+                    <span className="font-semibold text-red-600">專業 ASIC 礦機</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">競爭對手:</span>
+                    <span className="font-semibold text-red-600">全球數百萬台礦機</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 難度對比 */}
+            <div className="bg-white rounded-xl p-5 border-2 border-yellow-300">
+              <h4 className="font-bold text-gray-800 mb-3 flex items-center">
+                <span className="mr-2">📊</span>
+                難度差距有多大？
+              </h4>
+              <div className="space-y-3">
+                <div>
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-sm text-gray-600">你的難度 ({difficulty} 個 0)</span>
+                    <span className="text-sm font-semibold">1 單位</span>
+                  </div>
+                  <div className="bg-gray-200 rounded-full h-3 overflow-hidden">
+                    <div className="bg-green-500 h-full" style={{ width: '5%' }}></div>
+                  </div>
+                </div>
+                <div>
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-sm text-gray-600">真實比特幣 (19 個 0)</span>
+                    <span className="text-sm font-semibold text-red-600">約 10¹⁵ 倍難度</span>
+                  </div>
+                  <div className="bg-gray-200 rounded-full h-3 overflow-hidden">
+                    <div className="bg-gradient-to-r from-red-500 to-red-700 h-full" style={{ width: '100%' }}></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 教育總結 */}
+            <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded mt-4">
+              <p className="text-sm text-gray-700 font-semibold mb-2">
+                💡 重要觀念：
+              </p>
+              <ul className="text-sm text-gray-700 space-y-1 list-disc list-inside">
+                <li>你剛才的模擬只是為了學習原理，難度僅為真實比特幣的極小一部分</li>
+                <li>真實比特幣需要專業 ASIC 礦機，每秒可嘗試數百兆次</li>
+                <li>個人電腦或瀏覽器<strong>永遠無法</strong>獨自挖到真實比特幣</li>
+                <li>礦工必須加入礦池，並使用數萬美元的設備才有機會獲利</li>
+                <li>全球礦工每天消耗的電力約等於一個中型國家的用電量</li>
+              </ul>
+            </div>
+          </div>
+
+              {/* 模擬獎勵顯示（較小且明確標示為模擬） */}
+              <div className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl p-5 border-2 border-yellow-300">
+                <div className="flex items-center mb-4">
+                  <span className="text-2xl mr-2">🎁</span>
+                  <div>
+                    <h4 className="font-bold text-gray-800">假設獎勵（僅供參考）</h4>
+                    <p className="text-xs text-gray-600">如果這是真實的比特幣區塊</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div className="bg-white rounded-lg p-3 text-center border border-gray-200">
+                    <p className="text-xs text-gray-600 mb-1">區塊獎勵</p>
+                    <p className="text-lg font-bold text-yellow-600">{miningReward.blockReward.toFixed(3)}</p>
+                    <p className="text-xs text-gray-500">BTC</p>
+                  </div>
+                  <div className="bg-white rounded-lg p-3 text-center border border-gray-200">
+                    <p className="text-xs text-gray-600 mb-1">手續費</p>
+                    <p className="text-lg font-bold text-green-600">{miningReward.transactionFees.toFixed(3)}</p>
+                    <p className="text-xs text-gray-500">BTC</p>
+                  </div>
+                  <div className="bg-white rounded-lg p-3 text-center border border-gray-200">
+                    <p className="text-xs text-gray-600 mb-1">總計</p>
+                    <p className="text-lg font-bold text-orange-600">{miningReward.totalReward.toFixed(3)}</p>
+                    <p className="text-xs text-gray-500">BTC</p>
+                  </div>
+                  <div className="bg-white rounded-lg p-3 text-center border border-gray-200">
+                    <p className="text-xs text-gray-600 mb-1">價值</p>
+                    <p className="text-lg font-bold text-green-600">${(miningReward.usdValue / 1000).toFixed(0)}k</p>
+                    <p className="text-xs text-gray-500">USD</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* 真實比特幣網絡算力對比 - 可摺疊 */}
+      <div className="mb-6">
+        <button
+          onClick={() => setShowComparison(!showComparison)}
+          className="w-full bg-gradient-to-r from-red-50 to-orange-50 hover:from-red-100 hover:to-orange-100 rounded-xl p-4 border-2 border-red-300 transition-all duration-300 flex items-center justify-between"
+        >
+          <div className="flex items-center">
+            <span className="text-2xl mr-3">🌍</span>
+            <span className="font-bold text-gray-800 text-lg">算力對比與難度說明</span>
+          </div>
+          <span className="text-2xl text-red-600 transition-transform duration-300" style={{ transform: showComparison ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+            ▼
+          </span>
+        </button>
+
+        {showComparison && (
+          <div className="mt-4 space-y-6 animate-fadeIn">
+            {/* 真實比特幣網絡算力對比 */}
+            <div className="bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50 rounded-2xl p-6 border-2 border-red-300">
+              <h3 className="font-bold text-gray-800 mb-4 text-xl flex items-center">
+                <span className="mr-2">🌍</span>
+                你的瀏覽器 vs 真實比特幣網絡
+              </h3>
+        <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-white rounded-xl p-6 shadow-lg border-2 border-blue-300">
+            <h4 className="font-bold text-gray-800 mb-4 flex items-center">
+              <span className="mr-2">💻</span> 你的瀏覽器算力
+            </h4>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600">挖礦速度:</span>
+                <span className="font-bold text-blue-600">~1,000 H/s</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600">難度 4 所需時間:</span>
+                <span className="font-bold text-blue-600">~10-30 秒</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600">設備:</span>
+                <span className="font-bold text-blue-600">一般電腦</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl p-6 shadow-lg border-2 border-red-400">
+            <h4 className="font-bold text-gray-800 mb-4 flex items-center">
+              <span className="mr-2">🌐</span> 真實比特幣網絡
+            </h4>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600">全網算力:</span>
+                <span className="font-bold text-red-600">~600 EH/s</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600">一個區塊時間:</span>
+                <span className="font-bold text-red-600">~10 分鐘</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600">設備:</span>
+                <span className="font-bold text-red-600">專業礦機</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-6 bg-red-100 border-l-4 border-red-500 p-4 rounded">
+          <p className="text-sm text-gray-700 mb-2">
+            <strong>🔥 算力差距：</strong>
+          </p>
+          <p className="text-sm text-gray-700">
+            1 EH/s (Exahash) = 1,000,000,000,000,000,000 H/s (100京次/秒)
+          </p>
+          <p className="text-sm text-gray-700 mt-2">
+            <strong>真實比特幣網絡的算力是你瀏覽器的 600,000,000,000,000,000 倍！</strong>
+          </p>
+          <p className="text-sm text-gray-700 mt-2">
+            這就是為什麼個人電腦無法獨自挖到比特幣，必須使用專業礦機加入礦池才有機會！
+          </p>
+        </div>
       </div>
 
       {/* 難度對比表 */}
@@ -802,6 +1234,9 @@ function MiningSimulator() {
             每秒嘗試數兆次，才能在平均 10 分鐘內找到答案。這就是為什麼比特幣挖礦消耗大量電力！
           </p>
         </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

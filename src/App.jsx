@@ -29,21 +29,24 @@ function App() {
       <Navbar />
       
       {/* Tab 導覽 */}
-      <div className="sticky top-16 sm:top-20 z-40 bg-white shadow-lg border-b-2 border-gray-200">
+      <div className="sticky top-16 sm:top-20 z-40 bg-gradient-to-b from-orange-50 to-white shadow-md border-b-2 border-orange-200">
         <div className="container mx-auto px-4">
           <div className="flex overflow-x-auto hide-scrollbar">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center space-x-2 px-4 sm:px-6 py-4 font-semibold transition-all whitespace-nowrap ${
+                className={`relative flex items-center space-x-2 px-4 sm:px-6 py-4 font-semibold transition-all whitespace-nowrap ${
                   activeTab === tab.id
-                    ? 'text-bitcoin-orange border-b-4 border-bitcoin-orange'
-                    : 'text-gray-600 hover:text-bitcoin-orange hover:bg-gray-50'
+                    ? 'text-bitcoin-orange'
+                    : 'text-gray-600 hover:text-bitcoin-orange hover:bg-orange-50/50'
                 }`}
               >
                 <span className="text-xl">{tab.icon}</span>
                 <span className="hidden sm:inline">{tab.label}</span>
+                {activeTab === tab.id && (
+                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-bitcoin-orange via-orange-500 to-orange-600 shadow-md"></div>
+                )}
               </button>
             ))}
           </div>
@@ -51,32 +54,95 @@ function App() {
       </div>
 
       {/* 主要內容區 */}
-      <main className="container mx-auto px-4 sm:px-6 pt-12 sm:pt-16 pb-8 sm:pb-12 max-w-7xl">
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-8 sm:pb-12 max-w-[1400px]">
         
         {/* 比特幣簡介 */}
-        {/* 比特幣簡介 */}
-{/* 比特幣簡介 */}
-{/* 比特幣簡介 */}
 {activeTab === 'intro' && (
-  <div className="animate-fadeIn">
-    <div className="relative bg-gradient-to-br from-bitcoin-orange via-orange-500 to-bitcoin-gold rounded-2xl sm:rounded-3xl p-6 sm:p-8 lg:p-12 text-white shadow-2xl overflow-hidden">
+  <div className="animate-fadeIn space-y-6">
+    {/* 頂部橫幅 - 簡化版 */}
+    <div className="relative bg-gradient-to-br from-bitcoin-orange via-orange-500 to-bitcoin-gold rounded-2xl sm:rounded-3xl p-8 sm:p-10 text-white shadow-2xl overflow-hidden">
       {/* 裝飾性背景 */}
       <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32"></div>
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-white/5 rounded-full -ml-48 -mb-48"></div>
-      
+
       <div className="relative z-10">
-        <div className="flex items-center mb-6">
-          <span className="text-6xl mr-4">₿</span>
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold">比特幣入門與視覺化互動平台</h1>
+        <div className="flex flex-col items-center text-center">
+          <span className="text-6xl sm:text-7xl mb-4">₿</span>
+          <h1 className="text-3xl sm:text-5xl font-bold mb-3">歡迎來到比特幣世界</h1>
+          <p className="text-lg sm:text-xl font-light max-w-2xl">從零開始，透過互動式學習探索區塊鏈技術的奧秘</p>
         </div>
-        
-        <p className="text-lg sm:text-xl lg:text-2xl mb-6 sm:mb-8 font-light">
-          透過互動式學習，理解區塊鏈技術與比特幣的核心原理
-        </p>
-        
-        {/* 可展開教育式卡片 */}
-        <div className="grid md:grid-cols-2 gap-6 mt-8">
-          {/* 卡片 1：什麼是比特幣？ */}
+      </div>
+    </div>
+
+    {/* 學習進度提示 */}
+    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-5 border-2 border-blue-200">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center">
+          <span className="text-2xl mr-3">🎓</span>
+          <h3 className="font-bold text-gray-800 text-lg">學習路徑</h3>
+        </div>
+        <span className="text-sm text-gray-600">建議順序</span>
+      </div>
+      <div className="flex items-center gap-2 overflow-x-auto pb-2">
+        <div className="flex-shrink-0 bg-white rounded-lg px-3 py-2 border-2 border-blue-400">
+          <span className="text-sm font-semibold text-blue-600">1. 閱讀簡介</span>
+        </div>
+        <span className="text-gray-400">→</span>
+        <div className="flex-shrink-0 bg-white rounded-lg px-3 py-2 border border-gray-300">
+          <span className="text-sm font-semibold text-gray-600">2. SHA-256</span>
+        </div>
+        <span className="text-gray-400">→</span>
+        <div className="flex-shrink-0 bg-white rounded-lg px-3 py-2 border border-gray-300">
+          <span className="text-sm font-semibold text-gray-600">3. 挖礦模擬</span>
+        </div>
+        <span className="text-gray-400">→</span>
+        <div className="flex-shrink-0 bg-white rounded-lg px-3 py-2 border border-gray-300">
+          <span className="text-sm font-semibold text-gray-600">4. 轉帳體驗</span>
+        </div>
+      </div>
+    </div>
+
+    {/* 精簡核心概念卡片 */}
+    <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-5 border-2 border-blue-200 hover:shadow-lg transition-shadow">
+        <div className="text-4xl mb-3">🔐</div>
+        <h4 className="font-bold text-gray-800 mb-2 text-lg">去中心化</h4>
+        <p className="text-sm text-gray-700">沒有銀行或政府控制，由全球電腦共同維護</p>
+      </div>
+
+      <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-xl p-5 border-2 border-yellow-200 hover:shadow-lg transition-shadow">
+        <div className="text-4xl mb-3">💎</div>
+        <h4 className="font-bold text-gray-800 mb-2 text-lg">數位黃金</h4>
+        <p className="text-sm text-gray-700">總量限制 2100 萬枚，稀缺性帶來保值性</p>
+      </div>
+
+      <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-5 border-2 border-green-200 hover:shadow-lg transition-shadow">
+        <div className="text-4xl mb-3">🔗</div>
+        <h4 className="font-bold text-gray-800 mb-2 text-lg">區塊鏈</h4>
+        <p className="text-sm text-gray-700">不可篡改的分散式帳本，確保交易安全</p>
+      </div>
+
+      <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-5 border-2 border-purple-200 hover:shadow-lg transition-shadow">
+        <div className="text-4xl mb-3">⚡</div>
+        <h4 className="font-bold text-gray-800 mb-2 text-lg">快速轉帳</h4>
+        <p className="text-sm text-gray-700">無需銀行，幾分鐘內完成全球轉帳</p>
+      </div>
+    </div>
+
+    {/* 詳細教學卡片 - 改為緊湊設計 */}
+    <div className="space-y-4">
+      {/* 標題區 */}
+      <div className="bg-white rounded-xl p-4 border border-gray-200">
+        <div className="flex items-center">
+          <span className="text-2xl mr-3">📚</span>
+          <h2 className="text-xl font-bold text-gray-800">深入了解比特幣</h2>
+          <span className="ml-auto text-xs text-gray-500">點擊卡片展開</span>
+        </div>
+      </div>
+
+      {/* 可展開教育式卡片 */}
+      <div className="grid md:grid-cols-2 gap-4 lg:gap-6">
+        {/* 卡片 1：什麼是比特幣？ */}
           <div className="bg-white rounded-2xl shadow-xl overflow-hidden transition-all duration-300">
             <button
               onClick={() => toggleCard('bitcoin')}
@@ -268,31 +334,41 @@ function App() {
             </div>
           </div>
         </div>
+      </div>
 
-        {/* 開始探索區塊 - 白色高對比 */}
-        <div className="mt-8 bg-white rounded-2xl p-6 shadow-xl">
-          <div className="flex items-center mb-4">
-            <span className="text-3xl mr-3">🚀</span>
-            <h3 className="text-2xl font-bold text-gray-800">開始探索</h3>
-          </div>
-          <p className="text-lg mb-4 text-gray-700">點擊上方標籤，體驗各項互動功能：</p>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {tabs.slice(1).map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className="bg-gradient-to-br from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-600 text-white rounded-xl p-4 transition-all duration-300 hover:scale-105 shadow-lg"
-              >
-                <div className="text-3xl mb-2">{tab.icon}</div>
-                <div className="text-sm font-semibold">{tab.label}</div>
-              </button>
-            ))}
-          </div>
+      {/* 開始探索區塊 - 重新設計 */}
+      <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-2xl p-8 shadow-2xl text-white">
+        <div className="text-center mb-6">
+          <div className="text-5xl mb-3">🚀</div>
+          <h3 className="text-3xl font-bold mb-2">準備好開始學習了嗎？</h3>
+          <p className="text-lg font-light opacity-90">從基礎到進階，一步步探索比特幣的世界</p>
+        </div>
+
+        <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          {tabs.slice(1).map((tab, index) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className="group bg-white/10 backdrop-blur-sm hover:bg-white/20 border-2 border-white/30 hover:border-white rounded-xl p-5 transition-all duration-300 hover:scale-105 hover:shadow-xl"
+            >
+              <div className="flex flex-col items-center">
+                <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mb-3 text-2xl group-hover:scale-110 transition-transform">
+                  {tab.icon}
+                </div>
+                <div className="text-sm font-bold mb-1">{tab.label}</div>
+                <div className="text-xs opacity-75">第 {index + 1} 步</div>
+              </div>
+            </button>
+          ))}
+        </div>
+
+        <div className="mt-6 text-center">
+          <p className="text-sm opacity-80">💡 提示：建議按照順序學習，效果更佳</p>
         </div>
       </div>
     </div>
-  </div>
-)}
+  )}
+
         {/* SHA-256 體驗 */}
         {activeTab === 'sha256' && (
           <div className="animate-fadeIn">
