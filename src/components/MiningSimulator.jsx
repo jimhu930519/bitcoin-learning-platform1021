@@ -6,8 +6,8 @@ import { InfoBox } from './shared/InfoBox'
 import { Tooltip } from './shared'
 
 function MiningSimulator() {
- const [blockNumber, setBlockNumber] = useState(1)
- const [transactions, setTransactions] = useState('Alice -> Bob: 1 BTC')
+ const [blockNumber, setBlockNumber] = useState(0)
+ const [transactions, setTransactions] = useState('Coinbase: Genesis Block')
  const [previousHash, setPreviousHash] = useState('0000000000000000')
  const [nonce, setNonce] = useState(0)
  const [difficulty, setDifficulty] = useState(4)
@@ -592,8 +592,8 @@ function MiningSimulator() {
  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
  <button
  onClick={() => fillExample({
- blockNumber: 1,
- transactions: 'Alice -> Bob: 1 BTC',
+ blockNumber: 0,
+ transactions: 'Coinbase: Genesis Block - 50 BTC Reward',
  previousHash: '0000000000000000',
  difficulty: 2
  })}
@@ -617,7 +617,7 @@ function MiningSimulator() {
  <button
  onClick={() => fillExample({
  blockNumber: 1000,
- transactions: 'Multiple transactions: Alice->Bob, Charlie->David, Eve->Frank',
+ transactions: 'Alice -> Bob: 1.5 BTC, Charlie -> David: 0.8 BTC, Eve -> Frank: 2.3 BTC',
  previousHash: '00000a1b2c3d4e5f',
  difficulty: 4
  })}
@@ -650,8 +650,13 @@ function MiningSimulator() {
  <p className="text-sm text-gray-700 mb-2">
  就像<strong>書的頁碼</strong>一樣！每個區塊都有自己的編號：
  </p>
- <p className="text-sm text-gray-700 pl-4 mb-1">• 第 1 個區塊 = 第 1 頁</p>
- <p className="text-sm text-gray-700 pl-4 mb-1">• 第 2 個區塊 = 第 2 頁</p>
+ <div className="bg-blue-100 rounded-lg p-3 mb-2">
+ <p className="text-sm text-gray-800 font-semibold mb-1">🌟 特別注意：創世區塊</p>
+ <p className="text-xs text-gray-700">真實的比特幣從 <strong>Block #0</strong> 開始！</p>
+ </div>
+ <p className="text-sm text-gray-700 pl-4 mb-1">• 區塊 #0 = 創世區塊 (Genesis Block)</p>
+ <p className="text-sm text-gray-700 pl-4 mb-1">• 區塊 #1 = 第二個區塊</p>
+ <p className="text-sm text-gray-700 pl-4 mb-1">• 區塊 #2 = 第三個區塊</p>
  <p className="text-sm text-gray-700 pl-4 mb-2">• 依此類推...</p>
  <p className="text-sm text-gray-700">
  區塊依序排列，<strong>不能跳過或亂序</strong>，這樣才能確保區塊鏈的完整性！
@@ -661,7 +666,8 @@ function MiningSimulator() {
  <input
  type="number"
  value={blockNumber}
- onChange={(e) => setBlockNumber(parseInt(e.target.value) || 1)}
+ onChange={(e) => setBlockNumber(Math.max(0, parseInt(e.target.value) || 0))}
+ min="0"
  disabled={isMining}
  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-bitcoin-orange focus:outline-none disabled:bg-gray-100"
  />
