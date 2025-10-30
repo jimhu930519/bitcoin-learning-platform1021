@@ -33,24 +33,25 @@ function TradingSimulator() {
   const [timeframe, setTimeframe] = useState('1h') // 1m, 5m, 15m, 1h, 4h, 1d
 
  
+  // 計算當前價格
+  const getCurrentPrice = () => {
+    if (tradingPair === 'BTC/USDT') {
+      return prices.btc.usd
+    } else {
+      return prices.btc.twd
+    }
+  }
+
   // 初始化 K線數據
   useEffect(() => {
-    if (prices.btc.usd > 0) {
-      const data = generateCandleData(getCurrentPrice(), 100, timeframe)
+    const currentPrice = getCurrentPrice()
+    if (currentPrice > 0) {
+      const data = generateCandleData(currentPrice, 100, timeframe)
       setCandleData(data)
     }
-  }, [prices.btc.usd, timeframe])
+  }, [prices.btc.usd, prices.btc.twd, timeframe, tradingPair])
 
-  // 計算當前價格
- const getCurrentPrice = () => {
- if (tradingPair === 'BTC/USDT') {
- return prices.btc.usd
- } else {
- return prices.btc.twd
- }
- }
-
- // 計算總金額
+  // 計算總金額
  const calculateTotal = () => {
  if (!amount) return 0
  const price = orderType === 'limit' && limitPrice ? parseFloat(limitPrice) : getCurrentPrice()
@@ -351,33 +352,6 @@ function TradingSimulator() {
  <span className="text-6xl"></span>
  </div>
  </div>
-
- 
-              {/* K線圖 */}
-              <div className="mb-6">
-                <div className="flex items-center justify-between mb-3">
-                  <label className="block text-gray-700 font-bold">價格走勢圖</label>
-                  
-                  {/* 時間週期切換 */}
-                  <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
-                    {['1m', '5m', '15m', '1h', '4h', '1d'].map((tf) => (
-                      <button
-                        key={tf}
-                        onClick={() => setTimeframe(tf)}
-                        className={}
-                      >
-                        {tf}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                
-                <CandlestickChart data={candleData} height="400px" />
-                
-                <p className="text-xs text-gray-500 mt-2 text-center">
-                  模擬數據，僅供教學使用
-                </p>
-              </div>
 
 
               {/* K線圖 */}
