@@ -424,8 +424,9 @@ function TradingSimulator() {
  : 'border-gray-300 hover:border-gray-400'
  }`}
  >
- <p className="font-bold">錢包 A</p>
- <p className="text-sm text-gray-600">BTC: {walletA.balance.BTC}</p>
+ <p className="font-bold text-gray-700 mb-1">錢包 A</p>
+ <p className="text-gray-600 text-sm mb-1">BTC:</p>
+ <p className="text-2xl font-bold text-bitcoin-orange">{walletA.balance.BTC}</p>
  </button>
  <button
  onClick={() => setSelectedWallet('B')}
@@ -435,8 +436,9 @@ function TradingSimulator() {
  : 'border-gray-300 hover:border-gray-400'
  }`}
  >
- <p className="font-bold">錢包 B</p>
- <p className="text-sm text-gray-600">BTC: {walletB.balance.BTC}</p>
+ <p className="font-bold text-gray-700 mb-1">錢包 B</p>
+ <p className="text-gray-600 text-sm mb-1">BTC:</p>
+ <p className="text-2xl font-bold text-bitcoin-orange">{walletB.balance.BTC}</p>
  </button>
  </div>
  </div>

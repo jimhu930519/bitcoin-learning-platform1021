@@ -213,10 +213,9 @@ function PriceCalculator() {
  setCalculatedUSDT(0)
  setCalculatedTWD(0)
  }}
- className="bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg border-2 border-gray-300 font-semibold transition-colors flex items-center gap-2"
+ className="bg-white hover:bg-gray-50 text-gray-700 px-3 sm:px-4 py-2 rounded-lg border-2 border-gray-300 text-sm sm:text-base font-semibold transition-colors"
  >
- <span></span>
- <span className="hidden sm:inline">切換模式</span>
+ 切換
  </button>
  </div>
 
@@ -234,7 +233,7 @@ function PriceCalculator() {
  <label className="block text-gray-700 font-bold mb-3 text-lg">
  想購買多少 BTC？
  </label>
- <div className="flex space-x-3">
+ <div className="flex gap-2">
  <input
  type="number"
  value={btcAmount}
@@ -243,9 +242,9 @@ function PriceCalculator() {
  step="0.001"
  min="0"
  disabled={loading}
- className="flex-1 px-6 py-4 border-2 border-gray-300 rounded-xl focus:border-bitcoin-orange focus:outline-none text-xl disabled:bg-gray-100"
+ className="flex-1 px-4 sm:px-6 py-3 sm:py-4 border-2 border-gray-300 rounded-xl focus:border-bitcoin-orange focus:outline-none text-lg sm:text-xl disabled:bg-gray-100"
  />
- <span className="flex items-center px-6 py-4 bg-bitcoin-orange text-white rounded-xl font-bold text-xl">
+ <span className="flex items-center justify-center px-4 sm:px-6 py-3 sm:py-4 bg-bitcoin-orange text-white rounded-xl font-bold text-lg sm:text-xl whitespace-nowrap">
  BTC
  </span>
  </div>
@@ -287,7 +286,7 @@ function PriceCalculator() {
  <label className="block text-gray-700 font-bold mb-3 text-lg">
  你有多少台幣？
  </label>
- <div className="flex space-x-3">
+ <div className="flex gap-2">
  <input
  type="number"
  value={twdAmount}
@@ -296,9 +295,9 @@ function PriceCalculator() {
  step="1000"
  min="0"
  disabled={loading}
- className="flex-1 px-6 py-4 border-2 border-gray-300 rounded-xl focus:border-bitcoin-orange focus:outline-none text-xl disabled:bg-gray-100"
+ className="flex-1 px-4 sm:px-6 py-3 sm:py-4 border-2 border-gray-300 rounded-xl focus:border-bitcoin-orange focus:outline-none text-lg sm:text-xl disabled:bg-gray-100"
  />
- <span className="flex items-center px-6 py-4 bg-blue-600 text-white rounded-xl font-bold text-xl">
+ <span className="flex items-center justify-center px-4 sm:px-6 py-3 sm:py-4 bg-blue-600 text-white rounded-xl font-bold text-lg sm:text-xl whitespace-nowrap">
  TWD
  </span>
  </div>

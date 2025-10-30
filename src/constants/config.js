@@ -38,13 +38,13 @@ export const MINING_CONFIG = {
 // 初始錢包餘額
 export const INITIAL_WALLET_BALANCES = {
   A: {
-    BTC: 0.5,
+    BTC: 1.0,
     ETH: 2.0,
     USDT: 10000,
     TWD: 300000,
   },
   B: {
-    BTC: 0.3,
+    BTC: 0.5,
     ETH: 1.5,
     USDT: 5000,
     TWD: 150000,

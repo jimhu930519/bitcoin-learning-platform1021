@@ -11,6 +11,12 @@ function App() {
  const [activeTab, setActiveTab] = useState('intro')
  const [expandedCard, setExpandedCard] = useState(null)
 
+ // 切換 Tab 並滾動到頂部
+ const handleTabChange = (tabId) => {
+ setActiveTab(tabId)
+ window.scrollTo({ top: 0, behavior: 'smooth' })
+ }
+
  // 切換卡片展開狀態
  const toggleCard = (cardId) => {
  setExpandedCard(expandedCard === cardId ? null : cardId)
@@ -30,21 +36,20 @@ function App() {
  <Navbar />
  
  {/* Tab 導覽 */}
- <div className="sticky top-16 sm:top-20 z-40 bg-gradient-to-b from-orange-50 to-white shadow-md border-b-2 border-orange-200">
+ <div className="fixed top-16 sm:top-20 left-0 right-0 z-40 bg-gradient-to-b from-orange-50 to-white shadow-md border-b-2 border-orange-200">
  <div className="container mx-auto px-4">
  <div className="flex overflow-x-auto hide-scrollbar">
  {tabs.map((tab) => (
  <button
  key={tab.id}
- onClick={() => setActiveTab(tab.id)}
- className={`relative flex items-center space-x-2 px-4 sm:px-6 py-4 font-semibold transition-all whitespace-nowrap ${
+ onClick={() => handleTabChange(tab.id)}
+ className={`relative flex items-center justify-center px-3 sm:px-6 py-4 font-semibold transition-all whitespace-nowrap text-sm sm:text-base ${
  activeTab === tab.id
  ? 'text-bitcoin-orange'
  : 'text-gray-600 hover:text-bitcoin-orange hover:bg-orange-50/50'
  }`}
  >
- <span className="text-xl">{tab.icon}</span>
- <span className="hidden sm:inline">{tab.label}</span>
+ <span>{tab.label}</span>
  {activeTab === tab.id && (
  <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-bitcoin-orange via-orange-500 to-orange-600 shadow-md"></div>
  )}
@@ -55,7 +60,7 @@ function App() {
  </div>
 
  {/* 主要內容區 */}
- <main className="container mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-8 sm:pb-12 max-w-[1400px]">
+ <main className="container mx-auto px-4 sm:px-6 lg:px-8 pt-36 sm:pt-48 pb-8 sm:pb-12 max-w-[1400px]">
  
  {/* 比特幣簡介 */}
 {activeTab === 'intro' && (
