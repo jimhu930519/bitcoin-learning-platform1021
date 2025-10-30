@@ -6,7 +6,7 @@ import { Button } from './shared/Button'
 import { InfoBox } from './shared/InfoBox'
 import { Tooltip } from './shared'
 import CandlestickChart from './CandlestickChart'
-import { generateCandleData } from '../utils/generateCandleData'
+import { fetchBinanceKlines } from '../utils/fetchBinanceKlines'
 
 function TradingSimulator() {
  const { walletA, walletB, executeTrade, getWallet } = useWallet()
@@ -33,8 +33,15 @@ function TradingSimulator() {
   const [timeframe, setTimeframe] = useState('1h') // 1m, 5m, 15m, 1h, 4h, 1d
 
  
-  // 計算當前價格
+  // 計算當前價格 - 優先使用 K線數據的最新價格
   const getCurrentPrice = () => {
+    // 如果有 K線數據，使用最新的收盤價
+    if (candleData.length > 0) {
+      const latestCandle = candleData[candleData.length - 1]
+      return latestCandle.close
+    }
+
+    // 否則使用 API 價格作為備用
     if (tradingPair === 'BTC/USDT') {
       return prices.btc.usd
     } else {
@@ -42,14 +49,35 @@ function TradingSimulator() {
     }
   }
 
-  // 初始化 K線數據
+  // 初始化 K線數據 - 使用真實的 Binance 數據，並定期更新
   useEffect(() => {
-    const currentPrice = getCurrentPrice()
-    if (currentPrice > 0) {
-      const data = generateCandleData(currentPrice, 100, timeframe)
-      setCandleData(data)
+    const fetchData = async () => {
+      // 只支援 BTC/USDT，因為 Binance API 使用 BTCUSDT 格式
+      if (tradingPair === 'BTC/USDT') {
+        const data = await fetchBinanceKlines('BTCUSDT', timeframe, 100)
+        if (data.length > 0) {
+          setCandleData(data)
+        }
+      }
     }
-  }, [prices.btc.usd, prices.btc.twd, timeframe, tradingPair])
+
+    // 立即獲取一次
+    fetchData()
+
+    // 根據時間週期設定更新頻率
+    const updateIntervals = {
+      '1m': 60000,      // 1分鐘更新
+      '5m': 60000,      // 1分鐘更新（實際5分鐘一根K線）
+      '15m': 60000,     // 1分鐘更新
+      '1h': 60000,      // 1分鐘更新
+      '4h': 300000,     // 5分鐘更新
+      '1d': 300000      // 5分鐘更新
+    }
+
+    const interval = setInterval(fetchData, updateIntervals[timeframe] || 60000)
+
+    return () => clearInterval(interval)
+  }, [timeframe, tradingPair])
 
   // 計算總金額
  const calculateTotal = () => {
@@ -292,9 +320,9 @@ function TradingSimulator() {
  {priceLoading ? '' : ''} 更新價格
  </button>
  </div>
- <p className="text-gray-600 text-lg leading-relaxed">
+ <div className="text-gray-600 text-lg leading-relaxed">
  體驗加密貨幣交易流程，包含<Tooltip term="市價單" definition="Market Order，以當前市場價格立即成交的訂單。優點是快速成交，缺點是價格可能因市場波動而不如預期。" type="info" />和<Tooltip term="限價單" definition="Limit Order，設定期望價格的掛單，只有當市場價格達到設定價格時才會成交。可以控制買賣價格，但不保證一定成交。" type="info" />操作
- </p>
+ </div>
 
  {/* 價格錯誤提示 */}
  {priceError && (
