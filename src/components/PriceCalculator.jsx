@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useCryptoPrice } from '../hooks/useCryptoPrice'
+import { Tooltip } from './shared'
+
 function PriceCalculator() {
   // 使用自定義 Hook 獲取即時價格
   const { prices, loading, error, lastUpdate, refresh, apiSource, priceChange24h } = useCryptoPrice(30000) // 每 30 秒更新
@@ -83,7 +85,7 @@ function PriceCalculator() {
         </div>
         
         <p className="text-gray-600 text-lg leading-relaxed">
-          查詢即時加密貨幣價格，並估算購買比特幣所需的金額
+          查詢<Tooltip term="即時加密貨幣價格" definition="透過 API 連接交易所，獲取當前市場上加密貨幣的最新交易價格。價格會根據市場供需即時波動。" type="info" />，並估算購買比特幣所需的金額
         </p>
         
         <div className="flex flex-wrap items-center gap-2 mt-2">

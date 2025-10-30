@@ -2,3 +2,4 @@
 export { Button } from './Button'
 export { InfoBox } from './InfoBox'
 export { LoadingSpinner } from './LoadingSpinner'
+export { default as Tooltip } from './Tooltip'

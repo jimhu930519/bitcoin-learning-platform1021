@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Tooltip } from './shared'
 
 function SHA256Demo() {
   const [inputText, setInputText] = useState('')
@@ -110,7 +111,7 @@ function SHA256Demo() {
         </div>
         
         <p className="text-gray-600 text-lg leading-relaxed">
-          SHA-256 是比特幣使用的核心加密演算法。它可以將任意長度的資料轉換成固定 64 字元的雜湊值。
+          <Tooltip term="SHA-256" definition="Secure Hash Algorithm 256-bit，一種密碼學雜湊函數。比特幣使用它來創建區塊和交易的唯一識別碼，具有不可逆、抗碰撞、雪崩效應等特性。" type="primary" /> 是比特幣使用的核心加密演算法。它可以將任意長度的資料轉換成固定 64 字元的<Tooltip term="雜湊值" definition="Hash Value，通過雜湊函數計算得出的固定長度字串，作為數據的唯一指紋。相同輸入永遠產生相同雜湊值，即使輸入稍有變化，雜湊值也會完全不同。" type="info" />。
         </p>
       </div>
 
@@ -120,7 +121,7 @@ function SHA256Demo() {
           <div className="flex items-center">
             <span className="text-2xl mr-2">🔒</span>
             <div>
-              <h4 className="font-bold text-gray-800 text-sm">不可逆性</h4>
+              <h4 className="font-bold text-gray-800 text-sm"><Tooltip term="不可逆性" definition="單向函數特性，只能從輸入計算雜湊值，無法從雜湊值反推回原始輸入。這確保了比特幣地址和交易的安全性。" type="info" /></h4>
               <p className="text-xs text-gray-600">無法反推原始資料</p>
             </div>
           </div>
@@ -130,7 +131,7 @@ function SHA256Demo() {
           <div className="flex items-center">
             <span className="text-2xl mr-2">⚡</span>
             <div>
-              <h4 className="font-bold text-gray-800 text-sm">敏感性</h4>
+              <h4 className="font-bold text-gray-800 text-sm"><Tooltip term="雪崩效應" definition="Avalanche Effect，輸入的微小變化（哪怕只改一個字母）會導致輸出的雜湊值完全不同，平均改變約50%的位元。這使得任何篡改都會被立即發現。" type="warning" /></h4>
               <p className="text-xs text-gray-600">改一字元，完全不同</p>
             </div>
           </div>

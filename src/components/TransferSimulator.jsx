@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useWallet } from '../contexts/WalletContext'
+import { Tooltip } from './shared'
 
 function TransferSimulator() {
   const { walletA, walletB, transactionHistory, transfer, getCorrectAddress } = useWallet()
@@ -150,7 +151,7 @@ function TransferSimulator() {
           </h2>
         </div>
         <p className="text-gray-600 text-lg leading-relaxed">
-          體驗加密貨幣轉帳流程。選錯公鏈或地址，資產將永久消失！
+          體驗<Tooltip term="加密貨幣轉帳" definition="在區塊鏈上從一個地址發送數位資產到另一個地址的過程。需要支付手續費給礦工或驗證者，交易一旦確認就無法撤銷。" type="info" />流程。選錯<Tooltip term="公鏈" definition="Public Blockchain，獨立運行的區塊鏈網絡。不同公鏈有不同的地址格式和技術標準，如 Bitcoin、Ethereum、BSC 等。" type="warning" />或地址，資產將永久消失！
         </p>
       </div>
 
@@ -192,7 +193,7 @@ function TransferSimulator() {
 
             <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-xl p-4 border-2 border-yellow-200">
               <div className="text-3xl mb-2">💸</div>
-              <h4 className="font-bold text-gray-800 mb-2">什麼是手續費？</h4>
+              <h4 className="font-bold text-gray-800 mb-2">什麼是<Tooltip term="手續費" definition="Gas Fee 或 Transaction Fee，用戶支付給礦工或驗證者處理交易的費用。費用高低取決於網絡擁堵程度和交易複雜度。" type="info" />？</h4>
               <p className="text-sm text-gray-700">
                 礦工或驗證者處理交易需要費用。不同鏈的手續費差異很大，Ethereum 通常較貴，BSC 和 Polygon 較便宜。
               </p>
@@ -202,7 +203,7 @@ function TransferSimulator() {
               <div className="text-3xl mb-2">⚠️</div>
               <h4 className="font-bold text-gray-800 mb-2">為什麼不可逆？</h4>
               <p className="text-sm text-gray-700">
-                區塊鏈交易一旦確認就無法撤銷。沒有「客服」可以幫你找回錯誤轉帳的資金，這就是去中心化的代價。
+                <Tooltip term="區塊鏈交易" definition="記錄在區塊鏈上的價值轉移。交易一旦被礦工打包進區塊並獲得多個確認，就成為永久記錄，無法修改或撤銷。" type="warning" />一旦確認就無法撤銷。沒有「客服」可以幫你找回錯誤轉帳的資金，這就是<Tooltip term="去中心化" definition="Decentralization，沒有中央機構控制的系統。在區塊鏈中，由全球節點共同維護，沒有單一實體能控制或修改交易記錄。" type="primary" />的代價。
               </p>
             </div>
           </div>

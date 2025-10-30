@@ -5,6 +5,7 @@ import MiningSimulator from './components/MiningSimulator'
 import TransferSimulator from './components/TransferSimulator'
 import PriceCalculator from './components/PriceCalculator'
 import TradingSimulator from './components/TradingSimulator'
+import { Tooltip } from './components/shared'
 
 function App() {
   const [activeTab, setActiveTab] = useState('intro')
@@ -69,7 +70,7 @@ function App() {
         <div className="flex flex-col items-center text-center">
           <span className="text-6xl sm:text-7xl mb-4">₿</span>
           <h1 className="text-3xl sm:text-5xl font-bold mb-3">歡迎來到比特幣世界</h1>
-          <p className="text-lg sm:text-xl font-light max-w-2xl">從零開始，透過互動式學習探索區塊鏈技術的奧秘</p>
+          <p className="text-lg sm:text-xl font-light max-w-2xl">從零開始，透過互動式學習探索<Tooltip term="區塊鏈技術" definition="區塊鏈是一種去中心化的分散式帳本技術，由多個節點共同維護，每個區塊包含多筆交易記錄並通過密碼學連接，形成不可篡改的鏈式結構。" type="primary" />的奧秘</p>
         </div>
       </div>
     </div>
@@ -110,11 +111,11 @@ function App() {
 
       <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-xl p-5 border-2 border-yellow-200 hover:shadow-lg transition-shadow">
         <h4 className="font-bold text-gray-800 mb-2 text-lg">數位黃金</h4>
-        <p className="text-sm text-gray-700">總量限制 2100 萬枚，稀缺性帶來保值性</p>
+        <p className="text-sm text-gray-700">總量限制 <Tooltip term="2100 萬枚" definition="比特幣的總供應量永久限制在 2100 萬枚，這是由中本聰在代碼中設定的，無法更改。預計將在 2140 年左右全部挖完。" type="warning" />，稀缺性帶來保值性</p>
       </div>
 
       <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-5 border-2 border-green-200 hover:shadow-lg transition-shadow">
-        <h4 className="font-bold text-gray-800 mb-2 text-lg">區塊鏈</h4>
+        <h4 className="font-bold text-gray-800 mb-2 text-lg"><Tooltip term="區塊鏈" definition="一種分散式數據庫技術，將交易記錄打包成「區塊」，並用密碼學方法將區塊串連成「鏈」。一旦寫入就無法修改，確保數據的安全性和透明性。" type="info" /></h4>
         <p className="text-sm text-gray-700">不可篡改的分散式帳本，確保交易安全</p>
       </div>
 
@@ -137,7 +138,7 @@ function App() {
       {/* 可展開教育式卡片 */}
       <div className="grid md:grid-cols-2 gap-4 lg:gap-6">
         {/* 卡片 1：什麼是比特幣？ */}
-          <div className="bg-white rounded-2xl shadow-xl overflow-hidden transition-all duration-300">
+          <div className="bg-white rounded-2xl shadow-xl transition-all duration-300">
             <button
               onClick={() => toggleCard('bitcoin')}
               className="w-full p-6 text-left hover:bg-gray-50 transition-colors"
@@ -164,7 +165,7 @@ function App() {
                     <span className="mr-2">🔰</span> 給完全新手的說明
                   </h4>
                   <p className="text-gray-700 leading-relaxed">
-                    想像一下，你有一個數位錢包，裡面的錢<strong>不是由銀行管理</strong>，而是由<strong>全世界的電腦一起記帳</strong>。這就是比特幣！
+                    想像一下，你有一個<Tooltip term="數位錢包" definition="用於儲存、發送和接收加密貨幣的軟體或硬體。它不存放實際的幣，而是存放用於操作比特幣的私鑰。" type="info" />，裡面的錢<strong>不是由銀行管理</strong>，而是由<strong>全世界的電腦一起記帳</strong>。這就是比特幣！
                   </p>
                 </div>
 
@@ -190,7 +191,7 @@ function App() {
                     <span className="mr-2">👤</span> 誰是「中本聰」？
                   </h4>
                   <p className="text-gray-700 leading-relaxed">
-                    中本聰是在 2009 年創造比特幣的神秘人物（或團隊）。至今沒有人知道他的真實身分，就像蒙面俠一樣！他創造比特幣後就消失了，留下這個改變世界的發明。
+                    <Tooltip term="中本聰" definition="比特幣的創始人，於 2008 年發表比特幣白皮書。真實身份至今成謎，可能是個人或團隊。在 2010 年從社群消失，留下約 100 萬枚比特幣從未動用。" type="primary" />是在 2009 年創造比特幣的神秘人物（或團隊）。至今沒有人知道他的真實身分，就像蒙面俠一樣！他創造比特幣後就消失了，留下這個改變世界的發明。
                   </p>
                 </div>
 
@@ -216,7 +217,7 @@ function App() {
           </div>
           
           {/* 卡片 2：為何稱為數位黃金？ */}
-          <div className="bg-white rounded-2xl shadow-xl overflow-hidden transition-all duration-300">
+          <div className="bg-white rounded-2xl shadow-xl transition-all duration-300">
             <button
               onClick={() => toggleCard('gold')}
               className="w-full p-6 text-left hover:bg-gray-50 transition-colors"

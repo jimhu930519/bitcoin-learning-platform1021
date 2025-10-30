@@ -4,6 +4,7 @@ import { useCryptoPrice } from '../hooks/useCryptoPrice'
 import { TRADING_CONFIG } from '../constants/config'
 import { Button } from './shared/Button'
 import { InfoBox } from './shared/InfoBox'
+import { Tooltip } from './shared'
 
 function TradingSimulator() {
   const { walletA, walletB, executeTrade, getWallet } = useWallet()
@@ -276,7 +277,7 @@ function TradingSimulator() {
           </button>
         </div>
         <p className="text-gray-600 text-lg leading-relaxed">
-          體驗加密貨幣交易流程，包含市價單和限價單操作
+          體驗加密貨幣交易流程，包含<Tooltip term="市價單" definition="Market Order，以當前市場價格立即成交的訂單。優點是快速成交，缺點是價格可能因市場波動而不如預期。" type="info" />和<Tooltip term="限價單" definition="Limit Order，設定期望價格的掛單，只有當市場價格達到設定價格時才會成交。可以控制買賣價格，但不保證一定成交。" type="info" />操作
         </p>
 
         {/* 價格錯誤提示 */}

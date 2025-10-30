@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { MINING_CONFIG } from '../constants/config'
 import { Button } from './shared/Button'
 import { InfoBox } from './shared/InfoBox'
+import { Tooltip } from './shared'
 
 function MiningSimulator() {
   const [blockNumber, setBlockNumber] = useState(1)
@@ -256,7 +257,7 @@ function MiningSimulator() {
         </div>
         
         <p className="text-gray-600 text-lg leading-relaxed">
-          體驗比特幣的工作量證明（PoW）機制，理解為什麼挖礦需要大量運算能力
+          體驗比特幣的<Tooltip term="工作量證明（PoW）" definition="Proof of Work，一種共識機制，要求礦工通過大量運算來證明他們完成了工作，從而獲得記帳權和獎勵。這種機制確保了區塊鏈的安全性。" type="primary" />機制，理解為什麼<Tooltip term="挖礦" definition="通過運算解決複雜的數學問題來驗證交易並獲得新比特幣的過程。礦工需要找到符合難度要求的雜湊值。" type="info" />需要大量運算能力
         </p>
       </div>
 
@@ -267,7 +268,7 @@ function MiningSimulator() {
             <span className="text-2xl mr-2">❓</span>
             <h4 className="font-bold text-gray-800">為什麼要挖礦？</h4>
           </div>
-          <p className="text-sm text-gray-700">驗證交易並保護區塊鏈安全</p>
+          <p className="text-sm text-gray-700">驗證交易並保護<Tooltip term="區塊鏈" definition="一種分散式數據庫技術，將交易記錄打包成區塊並串連成鏈，形成不可篡改的帳本。" type="info" />安全</p>
         </div>
 
         <div className="bg-orange-50 rounded-xl p-4 border-2 border-orange-200">
@@ -275,7 +276,7 @@ function MiningSimulator() {
             <span className="text-2xl mr-2">🌍</span>
             <h4 className="font-bold text-gray-800">真實比特幣</h4>
           </div>
-          <p className="text-sm text-gray-700">需要約 19個0，平均10分鐘</p>
+          <p className="text-sm text-gray-700">需要約 <Tooltip term="19個前導0" definition="真實比特幣網絡的難度要求雜湊值開頭必須有約19個連續的0，這需要全球礦機每秒嘗試數兆次才能在平均10分鐘內找到。" type="warning" />，平均10分鐘</p>
         </div>
 
         <div className="bg-green-50 rounded-xl p-4 border-2 border-green-200">
@@ -283,7 +284,7 @@ function MiningSimulator() {
             <span className="text-2xl mr-2">💰</span>
             <h4 className="font-bold text-gray-800">當前獎勵</h4>
           </div>
-          <p className="text-sm text-gray-700">3.125 BTC + 手續費 ≈ $300k</p>
+          <p className="text-sm text-gray-700"><Tooltip term="3.125 BTC" definition="2024年第四次減半後的區塊獎勵。每21萬個區塊（約4年）獎勵減半一次，最初為50 BTC，直到2140年完全停止發行。" type="warning" /> + <Tooltip term="手續費" definition="用戶為加快交易確認速度而支付給礦工的小費，通常為0.1-0.5 BTC每區塊。" type="info" /> ≈ $300k</p>
         </div>
       </div>
 
@@ -374,7 +375,7 @@ function MiningSimulator() {
             </h4>
             <div className="space-y-3">
               <div className="bg-yellow-50 rounded-lg p-4 border-l-4 border-yellow-500">
-                <p className="text-sm text-gray-600 mb-1">區塊獎勵</p>
+                <p className="text-sm text-gray-600 mb-1"><Tooltip term="區塊獎勵" definition="成功挖出新區塊的礦工獲得的比特幣獎勵。這是比特幣新幣發行的唯一方式，每21萬個區塊減半一次。" type="warning" /></p>
                 <p className="text-3xl font-bold text-yellow-600">3.125 BTC</p>
                 <p className="text-xs text-gray-500 mt-1">每個區塊固定獎勵</p>
               </div>
@@ -394,7 +395,7 @@ function MiningSimulator() {
           {/* 減半歷史 */}
           <div className="bg-white rounded-xl p-6 shadow-lg border-2 border-orange-400">
             <h4 className="font-bold text-gray-800 mb-4 flex items-center text-lg">
-              <span className="mr-2">📉</span> 比特幣減半歷史
+              <span className="mr-2">📉</span> <Tooltip term="比特幣減半" definition="Halving，每產生21萬個區塊（約4年）區塊獎勵減半一次的機制。這確保比特幣總量永遠不超過2100萬枚，賦予比特幣稀缺性。" type="primary" />歷史
             </h4>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
@@ -751,7 +752,7 @@ function MiningSimulator() {
         <div>
           <label className="block text-gray-700 font-bold mb-2 flex items-center">
             <span className="mr-2">🎲</span>
-            Nonce 值（挖礦用的幸運數字）
+            <Tooltip term="Nonce" definition="Number used Once 的縮寫，是礦工不斷變更的隨機數。礦工通過嘗試不同的 Nonce 值來尋找符合難度要求的雜湊值。" type="primary" /> 值（挖礦用的幸運數字）
             <button
               onClick={() => setShowFieldHelp(showFieldHelp === 'nonce' ? null : 'nonce')}
               className="ml-2 text-bitcoin-orange hover:text-orange-600 text-xl"
@@ -808,7 +809,7 @@ function MiningSimulator() {
         <div>
           <label className="block text-gray-700 font-bold mb-2 flex items-center">
             <span className="mr-2">⚙️</span>
-            挖礦難度（謎題的困難程度）
+            <Tooltip term="挖礦難度" definition="決定雜湊值需要多少個前導0的參數。前導0越多，找到符合要求的雜湊值就越困難。比特幣網絡每2016個區塊（約2週）自動調整一次難度。" type="primary" />（謎題的困難程度）
             <button
               onClick={() => setShowFieldHelp(showFieldHelp === 'difficulty' ? null : 'difficulty')}
               className="ml-2 text-bitcoin-orange hover:text-orange-600 text-xl"
@@ -854,7 +855,7 @@ function MiningSimulator() {
       {/* Hash 顯示區 */}
       <div className="mb-8">
         <label className="block text-gray-700 font-bold mb-3 text-xl">
-          🔢 當前區塊雜湊值：
+          🔢 當前<Tooltip term="區塊雜湊值" definition="通過 SHA-256 演算法計算區塊內容（包含區塊編號、交易、前一個雜湊值和 Nonce）產生的64位十六進制數字。這是區塊的唯一識別碼。" type="info" />：
         </label>
         <div className={`rounded-xl p-6 border-4 transition-all duration-300 ${
           success 
@@ -1029,7 +1030,7 @@ function MiningSimulator() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">設備:</span>
-                    <span className="font-semibold text-red-600">專業 ASIC 礦機</span>
+                    <span className="font-semibold text-red-600">專業 <Tooltip term="ASIC 礦機" definition="Application-Specific Integrated Circuit，專門為比特幣挖礦設計的晶片。相比普通電腦，ASIC 礦機的挖礦效率高出數千倍，但只能用於挖礦。" type="info" /></span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">競爭對手:</span>
@@ -1169,7 +1170,7 @@ function MiningSimulator() {
             </h4>
             <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-gray-600">全網算力:</span>
+                <span className="text-gray-600"><Tooltip term="全網算力" definition="Hash Rate，整個比特幣網絡所有礦工算力的總和。以每秒能計算多少次雜湊值衡量，單位有 H/s、KH/s、MH/s、GH/s、TH/s、PH/s、EH/s。" type="info" />:</span>
                 <span className="font-bold text-red-600">~600 EH/s</span>
               </div>
               <div className="flex justify-between items-center">
@@ -1195,7 +1196,7 @@ function MiningSimulator() {
             <strong>真實比特幣網絡的算力是你瀏覽器的 600,000,000,000,000,000 倍！</strong>
           </p>
           <p className="text-sm text-gray-700 mt-2">
-            這就是為什麼個人電腦無法獨自挖到比特幣，必須使用專業礦機加入礦池才有機會！
+            這就是為什麼個人電腦無法獨自挖到比特幣，必須使用專業礦機加入<Tooltip term="礦池" definition="Mining Pool，多個礦工聯合挖礦的組織。礦池將所有成員的算力集中起來，找到區塊後按算力貢獻比例分配獎勵，讓小礦工也能獲得穩定收益。" type="info" />才有機會！
           </p>
         </div>
       </div>

@@ -55,3 +55,17 @@
 .animate-fadeIn {
   animation: fadeIn 0.5s ease-in-out;
 }
+
+/* Tooltip 專用淡入動畫 - 無位移 */
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-tooltipFadeIn {
+  animation: tooltipFadeIn 0.2s ease-out forwards;
+}
