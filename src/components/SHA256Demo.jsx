@@ -63,14 +63,73 @@ function SHA256Demo() {
  calculateHash(text)
  }
 
- // 微調演示：改變一個字元
- const demonstrateSensitivity = () => {
- const text = 'Bitcoin'
- setInputText(text)
- calculateHash(text)
- setInputText2(text + 'x') // 加一個字元
- handleInputChange2(text + 'x')
+ // 快速示例
+ const loadExample = (example) => {
+ setInputText(example.text1)
+ calculateHash(example.text1)
+ setInputText2(example.text2)
+ handleInputChange2(example.text2)
  setCompareMode(true)
+ }
+
+ // 預設差異示例
+ const examples = [
+ {
+ id: 1,
+ name: '增加1字元',
+ text1: 'Bitcoin',
+ text2: 'Bitcoinx',
+ description: '在結尾增加一個字元'
+ },
+ {
+ id: 2,
+ name: '修改1字元',
+ text1: 'Bitcoin',
+ text2: 'Bitc0in',
+ description: 'o改為0'
+ },
+ {
+ id: 3,
+ name: '相同長度',
+ text1: 'ABC',
+ text2: 'ABD',
+ description: '長度相同但內容不同'
+ },
+ {
+ id: 4,
+ name: '大小寫',
+ text1: 'bitcoin',
+ text2: 'Bitcoin',
+ description: '只改變大小寫'
+ },
+ {
+ id: 5,
+ name: '長度差異大',
+ text1: 'BTC',
+ text2: 'Bitcoin',
+ description: '長度差異較大'
+ }
+ ]
+
+ // 計算輸入文字差異（區分長度和內容）
+ const calculateInputDifference = () => {
+ if (!inputText || !inputText2) return { lengthDiff: 0, contentDiff: 0, total: 0 }
+
+ const lengthDiff = Math.abs(inputText.length - inputText2.length)
+ const minLength = Math.min(inputText.length, inputText2.length)
+
+ let contentDiff = 0
+ for (let i = 0; i < minLength; i++) {
+ if (inputText[i] !== inputText2[i]) {
+ contentDiff++
+ }
+ }
+
+ return {
+ lengthDiff,
+ contentDiff,
+ total: contentDiff + lengthDiff
+ }
  }
 
  // 計算兩個 hash 的不同字元數
@@ -148,17 +207,13 @@ function SHA256Demo() {
  </div>
  </div>
 
- {/* 敏感性演示按鈕 */}
- <div className="mb-6 flex gap-3">
- <button
- onClick={demonstrateSensitivity}
- className="flex-1 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-4 py-3 rounded-xl transition-all duration-300 font-semibold shadow-lg hover:shadow-xl"
- >
- 演示敏感性（改一個字）
- </button>
+ {/* 差異示例選擇 */}
+ <div className="mb-6">
+ <div className="flex items-center justify-between mb-3">
+ <h3 className="text-lg font-bold text-gray-800">體驗不同差異情境</h3>
  <button
  onClick={() => setCompareMode(!compareMode)}
- className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
+ className={`px-4 py-2 rounded-lg font-semibold transition-all duration-300 text-sm ${
  compareMode
  ? 'bg-red-500 hover:bg-red-600 text-white'
  : 'bg-gray-200 hover:bg-gray-300 text-gray-800'
@@ -166,6 +221,20 @@ function SHA256Demo() {
  >
  {compareMode ? '關閉比對' : '開啟比對'}
  </button>
+ </div>
+ <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+ {examples.map(example => (
+ <button
+ key={example.id}
+ onClick={() => loadExample(example)}
+ className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-4 py-3 rounded-lg transition-all duration-300 font-semibold text-sm shadow-md hover:shadow-lg"
+ title={example.description}
+ >
+ <div className="font-bold">{example.name}</div>
+ <div className="text-xs opacity-80 mt-1">{example.description}</div>
+ </button>
+ ))}
+ </div>
  </div>
 
  {/* 輸入輸出區 */}
@@ -233,11 +302,16 @@ function SHA256Demo() {
  )}
  </div>
 
- {/* 比對統計 */}
- {compareMode && hash && hash2 && (
- <div className="mb-6 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl p-5 border-2 border-yellow-300 animate-fadeIn">
- <div className="flex items-center justify-between mb-3">
- <h4 className="font-bold text-gray-800 text-lg"> 差異分析</h4>
+ {/* 比對統計 - 改进版 */}
+ {compareMode && hash && hash2 && (() => {
+ const inputDiff = calculateInputDifference()
+ const hashDiffCount = countDifferences()
+ const changeRate = ((hashDiffCount / 64) * 100).toFixed(0)
+
+ return (
+ <div className="mb-6 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl p-6 border-2 border-yellow-300 animate-fadeIn">
+ <div className="flex items-center justify-between mb-4">
+ <h4 className="font-bold text-gray-800 text-xl">差異分析</h4>
  <label className="flex items-center cursor-pointer">
  <input
  type="checkbox"
@@ -248,36 +322,74 @@ function SHA256Demo() {
  <span className="text-sm text-gray-700">高亮差異</span>
  </label>
  </div>
- <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
- <div className="bg-white rounded-lg p-3 text-center border border-gray-200">
- <p className="text-xs text-gray-600 mb-1">輸入差異</p>
- <p className="text-2xl font-bold text-blue-600">
- {Math.abs(inputText.length - inputText2.length) === 0
- ? '1 字元'
- : `${Math.abs(inputText.length - inputText2.length)} 字元`}
+
+ <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+ {/* 輸入差異 */}
+ <div className="bg-white rounded-xl p-4 border-2 border-blue-300 shadow-sm">
+ <p className="text-sm text-gray-600 mb-2">輸入差異</p>
+ <p className="text-3xl font-bold text-blue-600 mb-1">
+ {inputDiff.total}
+ </p>
+ <div className="text-xs text-gray-500 space-y-1">
+ {inputDiff.lengthDiff > 0 && (
+ <p>長度: +{inputDiff.lengthDiff} 字元</p>
+ )}
+ {inputDiff.contentDiff > 0 && (
+ <p>內容: {inputDiff.contentDiff} 字元不同</p>
+ )}
+ {inputDiff.lengthDiff === 0 && inputDiff.contentDiff === 0 && (
+ <p>完全相同</p>
+ )}
+ </div>
+ </div>
+
+ {/* Hash 差異數字 */}
+ <div className="bg-white rounded-xl p-4 border-2 border-red-300 shadow-sm">
+ <p className="text-sm text-gray-600 mb-2">Hash 差異</p>
+ <p className="text-3xl font-bold text-red-600 mb-1">
+ {hashDiffCount}
+ </p>
+ <p className="text-xs text-gray-500">共 64 字元</p>
+ </div>
+
+ {/* 改變率 */}
+ <div className="bg-white rounded-xl p-4 border-2 border-orange-300 shadow-sm">
+ <p className="text-sm text-gray-600 mb-2">改變率</p>
+ <p className="text-3xl font-bold text-orange-600 mb-1">
+ {changeRate}%
+ </p>
+ <p className="text-xs text-gray-500">
+ {changeRate > 40 ? '高度變化' : changeRate > 20 ? '中度變化' : '輕微變化'}
  </p>
  </div>
- <div className="bg-white rounded-lg p-3 text-center border border-gray-200">
- <p className="text-xs text-gray-600 mb-1">Hash 差異</p>
- <p className="text-2xl font-bold text-red-600">{countDifferences()}/64</p>
- </div>
- <div className="bg-white rounded-lg p-3 text-center border border-gray-200">
- <p className="text-xs text-gray-600 mb-1">改變率</p>
- <p className="text-2xl font-bold text-orange-600">
- {((countDifferences() / 64) * 100).toFixed(0)}%
+
+ {/* 雪崩效應確認 */}
+ <div className="bg-white rounded-xl p-4 border-2 border-green-300 shadow-sm">
+ <p className="text-sm text-gray-600 mb-2">雪崩效應</p>
+ <p className="text-3xl font-bold text-green-600 mb-1">
+ {changeRate >= 40 ? '✓' : '—'}
+ </p>
+ <p className="text-xs text-gray-500">
+ {changeRate >= 40 ? '已觸發' : '未達標準'}
  </p>
  </div>
- <div className="bg-white rounded-lg p-3 text-center border border-gray-200">
- <p className="text-xs text-gray-600 mb-1">雪崩效應</p>
- <p className="text-2xl font-bold text-green-600"></p>
  </div>
- </div>
- <p className="text-sm text-gray-700 mt-3">
- <strong> 雪崩效應：</strong>只改變 1 個字元，卻造成約 {((countDifferences() / 64) * 100).toFixed(0)}% 的 Hash 值改變！
+
+ {/* 說明文字 */}
+ <div className="mt-4 bg-white/50 rounded-lg p-4 border border-yellow-400">
+ <p className="text-sm text-gray-700 leading-relaxed">
+ <strong>💡 雪崩效應：</strong>
+ 輸入只改變 <span className="font-bold text-blue-600">{inputDiff.total}</span> 個字元
+ {inputDiff.lengthDiff > 0 && inputDiff.contentDiff > 0 &&
+ `（${inputDiff.contentDiff} 個內容差異 + ${inputDiff.lengthDiff} 個長度差異）`}
+ ，卻造成 Hash 值 <span className="font-bold text-red-600">{hashDiffCount}/64</span> 字元改變
+ （<span className="font-bold text-orange-600">{changeRate}%</span>）！
  這就是 SHA-256 的「敏感性」特性。
  </p>
  </div>
- )}
+ </div>
+ )
+ })()}
 
  {/* 測試範例按鈕 */}
  <div className="border-t-2 border-gray-200 pt-6 mb-6">
