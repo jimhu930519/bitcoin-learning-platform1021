@@ -7,48 +7,20 @@ function TransferSimulator() {
  const { walletA, walletB, transactionHistory, transfer, getCorrectAddress } = useWallet()
 
  const [activeWallet, setActiveWallet] = useState('A')
- const [selectedCoin, setSelectedCoin] = useState('BTC')
- const [selectedChain, setSelectedChain] = useState('Bitcoin')
  const [toAddress, setToAddress] = useState('')
  const [amount, setAmount] = useState('')
  const [message, setMessage] = useState(null)
  const [showEducation, setShowEducation] = useState(false)
- const [showChainInfo, setShowChainInfo] = useState(false)
  const [addressValidation, setAddressValidation] = useState(null)
  const [isTransferring, setIsTransferring] = useState(false)
 
+ // BTC-only constants
+ const selectedCoin = 'BTC'
+ const selectedChain = 'Bitcoin'
+ const currentFee = 0.0001
+
  const currentWallet = activeWallet === 'A' ? walletA : walletB
  const targetWallet = activeWallet === 'A' ? walletB : walletA
-
- // 鏈和幣種的對應關係
- const chainOptions = {
- BTC: ['Bitcoin'],
- ETH: ['Ethereum'],
- USDT: ['Ethereum', 'BSC', 'Polygon', 'Tron']
- }
-
- // 手續費資訊
- const feeInfo = {
- BTC: { Bitcoin: 0.0001 },
- ETH: { Ethereum: 0.002 },
- USDT: {
- Ethereum: 5,
- BSC: 0.5,
- Polygon: 0.1,
- Tron: 1
- }
- }
-
- const currentFee = feeInfo[selectedCoin][selectedChain]
-
- // 處理幣種改變
- const handleCoinChange = (coin) => {
- setSelectedCoin(coin)
- setSelectedChain(chainOptions[coin][0])
- setToAddress('')
- setMessage(null)
- setAddressValidation(null)
- }
 
  // 即時地址驗證
  useEffect(() => {
@@ -62,27 +34,14 @@ function TransferSimulator() {
  if (toAddress === correctAddr) {
  setAddressValidation({ valid: true, message: ' 地址正確！' })
  } else if (toAddress.length > 10) {
- // 檢查是否是錯誤的鏈
- const allAddresses = chainOptions[selectedCoin].map(chain =>
- getCorrectAddress(targetWallet, selectedCoin, chain)
- )
-
- if (allAddresses.includes(toAddress)) {
- setAddressValidation({
- valid: false,
- message: ' 地址屬於其他鏈！資產將遺失',
- isWrongChain: true
- })
- } else {
  setAddressValidation({
  valid: false,
  message: ' 地址格式錯誤或不存在'
  })
- }
  } else {
  setAddressValidation(null)
  }
- }, [toAddress, selectedCoin, selectedChain, targetWallet, getCorrectAddress, chainOptions])
+ }, [toAddress, targetWallet, getCorrectAddress])
 
  // 一鍵填入正確地址
  const fillCorrectAddress = () => {
@@ -93,7 +52,7 @@ function TransferSimulator() {
 
  // 快速設置金額
  const setQuickAmount = (percentage) => {
- const maxAmount = currentWallet.balance[selectedCoin]
+ const maxAmount = currentWallet.balance.BTC
  const quickAmount = (maxAmount * percentage).toFixed(4)
  setAmount(quickAmount)
  }
@@ -152,7 +111,7 @@ function TransferSimulator() {
  </h2>
  </div>
  <p className="text-gray-600 text-lg leading-relaxed">
- 體驗<Tooltip term="加密貨幣轉帳" definition="在區塊鏈上從一個地址發送數位資產到另一個地址的過程。需要支付手續費給礦工或驗證者，交易一旦確認就無法撤銷。" type="info" />流程。選錯<Tooltip term="公鏈" definition="Public Blockchain，獨立運行的區塊鏈網絡。不同公鏈有不同的地址格式和技術標準，如 Bitcoin、Ethereum、BSC 等。" type="warning" />或地址，資產將永久消失！
+ 體驗<Tooltip term="比特幣轉帳" definition="在比特幣區塊鏈上從一個地址發送比特幣到另一個地址的過程。需要支付手續費給礦工，交易一旦確認就無法撤銷。" type="info" />流程。輸入錯誤地址，資產將永久消失！
  </p>
  </div>
 
@@ -160,8 +119,8 @@ function TransferSimulator() {
  <div className="bg-red-50 border-l-4 border-red-500 p-5 rounded-xl mb-6">
  <h3 className="font-bold text-red-800 mb-2 text-lg"> 重要提醒</h3>
  <p className="text-red-700">
- 在真實的區塊鏈轉帳中，如果選錯公鏈或輸入錯誤地址，資產將無法找回！
- 請務必在轉帳前仔細確認接收地址和公鏈。
+ 在真實的比特幣轉帳中，如果輸入錯誤地址，資產將無法找回！
+ 請務必在轉帳前仔細確認接收地址。
  </p>
  </div>
 
@@ -174,7 +133,7 @@ function TransferSimulator() {
  <div className="flex items-center justify-between">
  <div className="flex items-center">
  <BookOpen className="w-6 h-6 text-blue-600 mr-3" />
- <span className="font-bold text-gray-800 text-lg">區塊鏈轉帳知識</span>
+ <span className="font-bold text-gray-800 text-lg">比特幣轉帳知識</span>
  </div>
  <ChevronDown
  className={`w-6 h-6 text-blue-600 transition-transform duration-300 ${showEducation ? 'rotate-180' : ''}`}
@@ -186,17 +145,17 @@ function TransferSimulator() {
  <div className="mt-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-4 animate-fadeIn">
  <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4 border-2 border-purple-200">
  <div className="text-3xl mb-2"></div>
- <h4 className="font-bold text-gray-800 mb-2">什麼是公鏈？</h4>
+ <h4 className="font-bold text-gray-800 mb-2">什麼是比特幣地址？</h4>
  <p className="text-sm text-gray-700">
- 公鏈是區塊鏈網路，不同的鏈有不同的地址格式。USDT 可以在多條鏈上運行，必須選對鏈才能成功轉帳。
+ 比特幣地址是一串獨特的字母數字組合，用於接收比特幣。每個地址都是唯一的，輸入錯誤將導致資產永久遺失。
  </p>
  </div>
 
  <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-xl p-4 border-2 border-yellow-200">
  <div className="text-3xl mb-2"></div>
- <h4 className="font-bold text-gray-800 mb-2">什麼是<Tooltip term="手續費" definition="Gas Fee 或 Transaction Fee，用戶支付給礦工或驗證者處理交易的費用。費用高低取決於網絡擁堵程度和交易複雜度。" type="info" />？</h4>
+ <h4 className="font-bold text-gray-800 mb-2">什麼是<Tooltip term="手續費" definition="Transaction Fee，用戶支付給礦工處理交易的費用。費用高低取決於網絡擁堵程度和交易大小。" type="info" />？</h4>
  <p className="text-sm text-gray-700">
- 礦工或驗證者處理交易需要費用。不同鏈的手續費差異很大，Ethereum 通常較貴，BSC 和 Polygon 較便宜。
+ 礦工處理交易需要費用。比特幣網絡的手續費會根據網絡擁堵程度波動，本模擬器使用固定的 0.0001 BTC 作為示例。
  </p>
  </div>
 
@@ -214,11 +173,11 @@ function TransferSimulator() {
  {/* 錢包選擇 */}
  <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 mb-8">
  {/* 錢包 A */}
- <div 
+ <div
  onClick={() => setActiveWallet('A')}
  className={`p-6 rounded-2xl border-4 cursor-pointer transition-all duration-300 ${
- activeWallet === 'A' 
- ? 'border-bitcoin-orange bg-orange-50 shadow-lg scale-105' 
+ activeWallet === 'A'
+ ? 'border-bitcoin-orange bg-orange-50 shadow-lg scale-105'
  : 'border-gray-200 bg-white hover:border-gray-300'
  }`}
  >
@@ -230,25 +189,17 @@ function TransferSimulator() {
  <div className="space-y-2">
  <div className="flex justify-between">
  <span className="text-gray-600">BTC:</span>
- <span className="font-bold text-bitcoin-orange">{walletA.balance.BTC}</span>
- </div>
- <div className="flex justify-between">
- <span className="text-gray-600">ETH:</span>
- <span className="font-bold text-blue-600">{walletA.balance.ETH}</span>
- </div>
- <div className="flex justify-between">
- <span className="text-gray-600">USDT:</span>
- <span className="font-bold text-green-600">{walletA.balance.USDT}</span>
+ <span className="font-bold text-bitcoin-orange text-xl">{walletA.balance.BTC}</span>
  </div>
  </div>
  </div>
 
  {/* 錢包 B */}
- <div 
+ <div
  onClick={() => setActiveWallet('B')}
  className={`p-6 rounded-2xl border-4 cursor-pointer transition-all duration-300 ${
- activeWallet === 'B' 
- ? 'border-bitcoin-orange bg-orange-50 shadow-lg scale-105' 
+ activeWallet === 'B'
+ ? 'border-bitcoin-orange bg-orange-50 shadow-lg scale-105'
  : 'border-gray-200 bg-white hover:border-gray-300'
  }`}
  >
@@ -260,15 +211,7 @@ function TransferSimulator() {
  <div className="space-y-2">
  <div className="flex justify-between">
  <span className="text-gray-600">BTC:</span>
- <span className="font-bold text-bitcoin-orange">{walletB.balance.BTC}</span>
- </div>
- <div className="flex justify-between">
- <span className="text-gray-600">ETH:</span>
- <span className="font-bold text-blue-600">{walletB.balance.ETH}</span>
- </div>
- <div className="flex justify-between">
- <span className="text-gray-600">USDT:</span>
- <span className="font-bold text-green-600">{walletB.balance.USDT}</span>
+ <span className="font-bold text-bitcoin-orange text-xl">{walletB.balance.BTC}</span>
  </div>
  </div>
  </div>
@@ -277,50 +220,18 @@ function TransferSimulator() {
  {/* 轉帳表單 */}
  <div className="bg-gray-50 rounded-2xl p-8 mb-8">
  <h3 className="text-2xl font-bold text-gray-800 mb-6"> 發送交易</h3>
- 
- <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 mb-6">
- {/* 選擇幣種 */}
- <div>
- <label className="block text-gray-700 font-bold mb-2">選擇幣種</label>
- <select
- value={selectedCoin}
- onChange={(e) => handleCoinChange(e.target.value)}
- className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-bitcoin-orange focus:outline-none"
- >
- <option value="BTC">Bitcoin (BTC)</option>
- <option value="ETH">Ethereum (ETH)</option>
- <option value="USDT">Tether (USDT)</option>
- </select>
- </div>
 
- {/* 選擇公鏈 */}
+ {/* Bitcoin Info Box */}
+ <div className="mb-6 p-4 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-xl border-2 border-bitcoin-orange">
+ <div className="flex items-center justify-between">
  <div>
- <div className="flex items-center justify-between mb-2">
- <label className="block text-gray-700 font-bold">選擇公鏈</label>
- <button
- onClick={() => setShowChainInfo(!showChainInfo)}
- className="text-xs text-blue-600 hover:text-blue-700"
- >
- {showChainInfo ? '隱藏' : '查看'}手續費
- </button>
+ <h4 className="font-bold text-gray-800 text-lg">Bitcoin (BTC)</h4>
+ <p className="text-sm text-gray-600">Bitcoin Network</p>
  </div>
- <select
- value={selectedChain}
- onChange={(e) => setSelectedChain(e.target.value)}
- className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-bitcoin-orange focus:outline-none"
- >
- {chainOptions[selectedCoin].map(chain => (
- <option key={chain} value={chain}>{chain}</option>
- ))}
- </select>
- {showChainInfo && (
- <div className="mt-2 p-3 bg-blue-50 rounded-lg border border-blue-200 animate-fadeIn">
- <p className="text-xs text-gray-700">
- <span className="font-bold">預估手續費：</span>
- {selectedCoin === 'USDT' ? `${currentFee} USDT` : `${currentFee} ${selectedCoin}`}
- </p>
+ <div className="text-right">
+ <p className="text-xs text-gray-600">預估手續費</p>
+ <p className="font-bold text-bitcoin-orange">{currentFee} BTC</p>
  </div>
- )}
  </div>
  </div>
 
@@ -382,12 +293,12 @@ function TransferSimulator() {
  value={amount}
  onChange={(e) => setAmount(e.target.value)}
  placeholder="0.00"
- step="0.01"
+ step="0.0001"
  min="0"
  className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-bitcoin-orange focus:outline-none"
  />
  <span className="flex items-center px-4 py-3 bg-gray-200 rounded-xl font-bold">
- {selectedCoin}
+ BTC
  </span>
  </div>
 
@@ -420,7 +331,7 @@ function TransferSimulator() {
  </div>
 
  <p className="text-sm text-gray-600">
- 可用餘額: <span className="font-bold text-bitcoin-orange">{currentWallet.balance[selectedCoin]}</span> {selectedCoin}
+ 可用餘額: <span className="font-bold text-bitcoin-orange">{currentWallet.balance.BTC}</span> BTC
  </p>
  </div>
 
@@ -431,21 +342,16 @@ function TransferSimulator() {
  <div className="space-y-1 text-sm">
  <div className="flex justify-between">
  <span className="text-gray-600">轉帳金額：</span>
- <span className="font-bold">{amount} {selectedCoin}</span>
+ <span className="font-bold">{amount} BTC</span>
  </div>
  <div className="flex justify-between">
  <span className="text-gray-600">預估手續費：</span>
- <span className="font-bold text-orange-600">
- {selectedCoin === 'USDT' ? `${currentFee} USDT` : `${currentFee} ${selectedCoin}`}
- </span>
+ <span className="font-bold text-orange-600">{currentFee} BTC</span>
  </div>
  <div className="flex justify-between border-t border-blue-300 pt-1 mt-1">
  <span className="text-gray-700 font-semibold">總計：</span>
  <span className="font-bold text-lg">
- {selectedCoin === 'USDT'
- ? `${(parseFloat(amount) + currentFee).toFixed(2)} USDT`
- : `${(parseFloat(amount) + currentFee).toFixed(4)} ${selectedCoin}`
- }
+ {(parseFloat(amount) + currentFee).toFixed(4)} BTC
  </span>
  </div>
  </div>
