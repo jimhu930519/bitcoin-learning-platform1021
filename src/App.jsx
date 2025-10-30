@@ -99,29 +99,33 @@ function App() {
  <div className="flex-shrink-0 bg-white rounded-lg px-3 py-2 border border-gray-300">
  <span className="text-sm font-semibold text-gray-600">4. 轉帳體驗</span>
  </div>
+ <span className="text-gray-400">→</span>
+ <div className="flex-shrink-0 bg-white rounded-lg px-3 py-2 border border-gray-300">
+ <span className="text-sm font-semibold text-gray-600">5. 模擬交易</span>
+ </div>
  </div>
  </div>
 
  {/* 精簡核心概念卡片 */}
  <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
  <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-5 border-2 border-blue-200 hover:shadow-lg transition-shadow">
- <h4 className="font-bold text-gray-800 mb-2 text-lg">去中心化</h4>
- <p className="text-sm text-gray-700">沒有銀行或政府控制，由全球電腦共同維護</p>
+ <h4 className="font-bold text-gray-800 mb-2 text-xl">去中心化</h4>
+ <p className="text-base text-gray-700">沒有銀行或政府控制，由全球電腦共同維護</p>
  </div>
 
  <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-xl p-5 border-2 border-yellow-200 hover:shadow-lg transition-shadow">
- <h4 className="font-bold text-gray-800 mb-2 text-lg">數位黃金</h4>
- <p className="text-sm text-gray-700">總量限制 <Tooltip term="2100 萬枚" definition="比特幣的總供應量永久限制在 2100 萬枚，這是由中本聰在代碼中設定的，無法更改。預計將在 2140 年左右全部挖完。" type="warning" />，稀缺性帶來保值性</p>
+ <h4 className="font-bold text-gray-800 mb-2 text-xl">數位黃金</h4>
+ <p className="text-base text-gray-700">總量限制 <Tooltip term="2100 萬枚" definition="比特幣的總供應量永久限制在 2100 萬枚，這是由中本聰在代碼中設定的，無法更改。預計將在 2140 年左右全部挖完。" type="warning" />，稀缺性帶來保值性</p>
  </div>
 
  <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-5 border-2 border-green-200 hover:shadow-lg transition-shadow">
- <h4 className="font-bold text-gray-800 mb-2 text-lg"><Tooltip term="區塊鏈" definition="一種分散式數據庫技術，將交易記錄打包成「區塊」，並用密碼學方法將區塊串連成「鏈」。一旦寫入就無法修改，確保數據的安全性和透明性。" type="info" /></h4>
- <p className="text-sm text-gray-700">不可篡改的分散式帳本，確保交易安全</p>
+ <h4 className="font-bold text-gray-800 mb-2 text-xl"><Tooltip term="區塊鏈" definition="一種分散式數據庫技術，將交易記錄打包成「區塊」，並用密碼學方法將區塊串連成「鏈」。一旦寫入就無法修改，確保數據的安全性和透明性。" type="info" /></h4>
+ <p className="text-base text-gray-700">不可篡改的分散式帳本，確保交易安全</p>
  </div>
 
  <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-5 border-2 border-purple-200 hover:shadow-lg transition-shadow">
- <h4 className="font-bold text-gray-800 mb-2 text-lg">快速轉帳</h4>
- <p className="text-sm text-gray-700">無需銀行，幾分鐘內完成全球轉帳</p>
+ <h4 className="font-bold text-gray-800 mb-2 text-xl">快速轉帳</h4>
+ <p className="text-base text-gray-700">無需銀行，幾分鐘內完成全球轉帳</p>
  </div>
  </div>
 
