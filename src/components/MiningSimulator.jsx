@@ -1049,29 +1049,48 @@ function MiningSimulator() {
 
  {/* 難度對比 */}
  <div className="bg-white rounded-xl p-5 border-2 border-yellow-300">
- <h4 className="font-bold text-gray-800 mb-3 flex items-center">
+ <h4 className="font-bold text-gray-800 mb-4 flex items-center text-lg">
  <span className="mr-2"></span>
  難度差距有多大？
  </h4>
- <div className="space-y-3">
- <div>
- <div className="flex justify-between items-center mb-1">
- <span className="text-sm text-gray-600">你的難度 ({difficulty} 個 0)</span>
- <span className="text-sm font-semibold">1 單位</span>
+
+ {/* 你的難度 */}
+ <div className="mb-4">
+ <div className="flex justify-between items-center mb-2">
+ <span className="text-sm font-semibold text-gray-700">你的難度 ({difficulty} 個 0)</span>
+ <span className="text-sm font-bold text-green-600">約 {Math.pow(16, difficulty).toLocaleString()} 次</span>
  </div>
- <div className="bg-gray-200 rounded-full h-3 overflow-hidden">
- <div className="bg-green-500 h-full" style={{ width: '5%' }}></div>
- </div>
- </div>
- <div>
- <div className="flex justify-between items-center mb-1">
- <span className="text-sm text-gray-600">真實比特幣 (19 個 0)</span>
- <span className="text-sm font-semibold text-red-600">約 10¹⁵ 倍難度</span>
- </div>
- <div className="bg-gray-200 rounded-full h-3 overflow-hidden">
- <div className="bg-gradient-to-r from-red-500 to-red-700 h-full" style={{ width: '100%' }}></div>
+ <div className="bg-gray-200 rounded-full h-4 overflow-hidden">
+ <div className="bg-green-500 h-full flex items-center justify-center text-xs text-white font-bold" style={{ width: '8%' }}>
+ 你的難度
  </div>
  </div>
+ <p className="text-xs text-gray-500 mt-1">瀏覽器幾秒鐘就能完成</p>
+ </div>
+
+ {/* 真實比特幣難度 */}
+ <div className="mb-4">
+ <div className="flex justify-between items-center mb-2">
+ <span className="text-sm font-semibold text-gray-700">真實比特幣 (約 19-20 個 0)</span>
+ <span className="text-sm font-bold text-red-600">約 10²³ 次嘗試</span>
+ </div>
+ <div className="bg-gray-200 rounded-full h-4 overflow-hidden">
+ <div className="bg-gradient-to-r from-red-500 to-red-700 h-full flex items-center justify-center text-xs text-white font-bold" style={{ width: '100%' }}>
+ 真實難度
+ </div>
+ </div>
+ <p className="text-xs text-gray-500 mt-1">全球礦機全天候不停運轉，平均 10 分鐘找到一個</p>
+ </div>
+
+ {/* 差距說明 */}
+ <div className="bg-gradient-to-r from-orange-50 to-red-50 rounded-lg p-4 border-l-4 border-red-500">
+ <p className="text-sm font-bold text-gray-800 mb-2">
+ 💡 差距倍數：約 10¹⁸ 倍 (1,000,000,000,000,000,000 倍)
+ </p>
+ <p className="text-xs text-gray-700 leading-relaxed">
+ 如果你的瀏覽器挖礦速度是「<strong>1滴水</strong>」，<br/>
+ 那真實比特幣網絡的算力就是「<strong>整個太平洋的水量</strong>」！
+ </p>
  </div>
  </div>
 
