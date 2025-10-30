@@ -444,84 +444,275 @@ function SHA256Demo() {
  </button>
 
  {showEducation && (
- <div className="mt-4 space-y-4 animate-fadeIn">
- <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border-2 border-blue-200">
- <h4 className="font-bold text-gray-800 mb-4 text-lg flex items-center">
- <span className="mr-2"></span>
- 1. 區塊鏈接（Block Chaining）
+ <div className="mt-4 space-y-6 animate-fadeIn">
+ {/* 卡片 1: 區塊鏈接 */}
+ <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 sm:p-8 border-2 border-blue-300 shadow-lg">
+ <div className="mb-6">
+ <div className="flex items-center mb-3">
+ <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-xl mr-3">
+ 1
+ </div>
+ <h4 className="font-bold text-gray-800 text-xl sm:text-2xl">
+ 區塊鏈接（Block Chaining）
  </h4>
- <p className="text-gray-700 text-sm mb-3">
- 每個區塊的 Hash 會被包含在下一個區塊中，形成不可篡改的鏈條。
+ </div>
+ <p className="text-gray-700 text-base leading-relaxed">
+ 就像<strong>連鎖扣環</strong>一樣，每個區塊都緊緊扣住前一個區塊！
  </p>
- <div className="bg-white rounded-lg p-4 border-2 border-blue-300">
- <div className="flex items-center justify-between text-sm">
- <div className="text-center flex-1">
- <p className="text-gray-600 mb-1">區塊 #1</p>
- <p className="text-xs font-mono text-blue-600">hash: abc123...</p>
  </div>
- <span className="text-2xl mx-2">→</span>
- <div className="text-center flex-1">
- <p className="text-gray-600 mb-1">區塊 #2</p>
- <p className="text-xs font-mono text-green-600">prev: abc123...</p>
+
+ {/* 視覺化說明 */}
+ <div className="bg-white rounded-xl p-5 border-2 border-blue-200 shadow-sm">
+ <p className="text-sm text-gray-600 mb-4 font-semibold">📌 運作方式：</p>
+ <div className="space-y-4">
+ {/* 區塊流程 */}
+ <div className="flex flex-col sm:flex-row items-center gap-3">
+ {/* 區塊 #1 */}
+ <div className="flex-1 bg-blue-100 rounded-lg p-4 border-2 border-blue-400">
+ <p className="text-sm font-bold text-blue-800 mb-3">📦 區塊 #1</p>
+ <div className="space-y-2 text-xs">
+ <div className="bg-white rounded px-2 py-1.5">
+ <p className="text-gray-600 text-xs mb-0.5">📝 交易內容</p>
+ <p className="text-gray-800 font-medium">Alice→Bob</p>
  </div>
- <span className="text-2xl mx-2">→</span>
- <div className="text-center flex-1">
- <p className="text-gray-600 mb-1">區塊 #3</p>
- <p className="text-xs font-mono text-purple-600">prev: def456...</p>
+ <div className="bg-blue-50 rounded px-2 py-1.5 border border-blue-300">
+ <p className="text-gray-600 text-xs mb-0.5">🔐 本區塊 Hash</p>
+ <p className="font-mono text-blue-600 font-bold">abc123...</p>
+ </div>
+ </div>
+ </div>
+
+ <div className="flex flex-col items-center justify-center">
+ <div className="text-2xl font-bold text-blue-500">→</div>
+ <p className="text-xs text-gray-500 mt-1 hidden sm:block">使用此Hash</p>
+ </div>
+
+ {/* 區塊 #2 */}
+ <div className="flex-1 bg-green-100 rounded-lg p-4 border-2 border-green-400">
+ <p className="text-sm font-bold text-green-800 mb-3">📦 區塊 #2</p>
+ <div className="space-y-2 text-xs">
+ <div className="bg-white rounded px-2 py-1.5">
+ <p className="text-gray-600 text-xs mb-0.5">📝 交易內容</p>
+ <p className="text-gray-800 font-medium">Charlie→David</p>
+ </div>
+ <div className="bg-yellow-50 rounded px-2 py-1.5 border border-yellow-400">
+ <p className="text-gray-600 text-xs mb-0.5">🔗 前一個 Hash</p>
+ <p className="font-mono text-green-700 font-bold">abc123...</p>
+ </div>
+ <div className="bg-green-50 rounded px-2 py-1.5 border border-green-300">
+ <p className="text-gray-600 text-xs mb-0.5">🔐 本區塊 Hash</p>
+ <p className="font-mono text-green-600 font-bold">def456...</p>
+ </div>
+ </div>
+ </div>
+
+ <div className="flex flex-col items-center justify-center">
+ <div className="text-2xl font-bold text-green-500">→</div>
+ <p className="text-xs text-gray-500 mt-1 hidden sm:block">使用此Hash</p>
+ </div>
+
+ {/* 區塊 #3 */}
+ <div className="flex-1 bg-purple-100 rounded-lg p-4 border-2 border-purple-400">
+ <p className="text-sm font-bold text-purple-800 mb-3">📦 區塊 #3</p>
+ <div className="space-y-2 text-xs">
+ <div className="bg-white rounded px-2 py-1.5">
+ <p className="text-gray-600 text-xs mb-0.5">📝 交易內容</p>
+ <p className="text-gray-800 font-medium">Eve→Frank</p>
+ </div>
+ <div className="bg-yellow-50 rounded px-2 py-1.5 border border-yellow-400">
+ <p className="text-gray-600 text-xs mb-0.5">🔗 前一個 Hash</p>
+ <p className="font-mono text-purple-700 font-bold">def456...</p>
+ </div>
+ <div className="bg-purple-50 rounded px-2 py-1.5 border border-purple-300">
+ <p className="text-gray-600 text-xs mb-0.5">🔐 本區塊 Hash</p>
+ <p className="font-mono text-purple-600 font-bold">ghi789...</p>
  </div>
  </div>
  </div>
  </div>
 
- <div className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-xl p-6 border-2 border-orange-200">
- <h4 className="font-bold text-gray-800 mb-4 text-lg flex items-center">
- <span className="mr-2"></span>
- 2. 工作量證明（Proof of Work）
- </h4>
- <p className="text-gray-700 text-sm mb-3">
- 礦工必須找到一個 Nonce 值，使得區塊的 Hash 開頭有足夠多的 0。
+ {/* 說明 */}
+ <div className="bg-yellow-50 rounded-lg p-4 border-l-4 border-yellow-400">
+ <p className="text-sm text-gray-800 leading-relaxed">
+ 💡 <strong>為什麼不能篡改？</strong><br/>
+ 如果有人想修改區塊 #1 的內容，它的 Hash 就會改變。
+ 但區塊 #2 記錄的是<strong>舊的 Hash</strong>，馬上就會被發現！
+ 就像多米諾骨牌，動一個就全部倒！
  </p>
- <div className="bg-white rounded-lg p-4 border-2 border-orange-300">
- <p className="text-sm text-gray-700 mb-2"><strong>範例：</strong></p>
- <div className="space-y-2 text-xs font-mono">
- <div className="flex items-center">
- <span className="text-red-600 mr-2"></span>
- <span>Nonce: 1 → Hash: 3a7f2b...</span>
- </div>
- <div className="flex items-center">
- <span className="text-red-600 mr-2"></span>
- <span>Nonce: 2 → Hash: 8c5d9e...</span>
- </div>
- <div className="flex items-center">
- <span className="text-green-600 mr-2"></span>
- <span className="text-green-700 font-bold">Nonce: 12345 → Hash: 0000abc...</span>
  </div>
  </div>
  </div>
  </div>
 
- <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border-2 border-green-200">
- <h4 className="font-bold text-gray-800 mb-4 text-lg flex items-center">
- <span className="mr-2"></span>
- 3. 交易驗證與地址生成
- </h4>
- <p className="text-gray-700 text-sm mb-3">
- SHA-256 也用於生成比特幣地址和驗證交易簽名。
- </p>
- <div className="grid sm:grid-cols-2 gap-3">
- <div className="bg-white rounded-lg p-3 border border-green-300">
- <p className="text-xs text-gray-600 mb-1">公鑰</p>
- <p className="text-xs font-mono text-gray-800">04a1b2c3d4...</p>
- <p className="text-center text-lg my-1">↓ SHA-256 ↓</p>
- <p className="text-xs text-gray-600 mb-1">地址</p>
- <p className="text-xs font-mono text-green-600">1A1zP1eP5Q...</p>
+ {/* 卡片 2: 工作量證明 */}
+ <div className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-2xl p-6 sm:p-8 border-2 border-orange-300 shadow-lg">
+ <div className="mb-6">
+ <div className="flex items-center mb-3">
+ <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold text-xl mr-3">
+ 2
  </div>
- <div className="bg-white rounded-lg p-3 border border-green-300">
- <p className="text-xs text-gray-600 mb-1">交易資料</p>
- <p className="text-xs font-mono text-gray-800">Alice→Bob...</p>
- <p className="text-center text-lg my-1">↓ SHA-256 ↓</p>
- <p className="text-xs text-gray-600 mb-1">交易 ID</p>
- <p className="text-xs font-mono text-green-600">5f3a8b7c...</p>
+ <h4 className="font-bold text-gray-800 text-xl sm:text-2xl">
+ 工作量證明（Proof of Work）
+ </h4>
+ </div>
+ <p className="text-gray-700 text-base leading-relaxed">
+ 就像<strong>抽獎遊戲</strong>一樣，礦工要不斷嘗試找到「幸運數字」！
+ </p>
+ </div>
+
+ {/* 視覺化說明 */}
+ <div className="bg-white rounded-xl p-5 border-2 border-orange-200 shadow-sm">
+ <p className="text-sm text-gray-600 mb-4 font-semibold">📌 挖礦過程：</p>
+
+ {/* 目標說明 */}
+ <div className="bg-orange-50 rounded-lg p-4 mb-4 border-l-4 border-orange-400">
+ <p className="text-sm font-bold text-orange-800 mb-2">🎯 目標：找到開頭有很多 0 的 Hash</p>
+ <p className="text-xs text-gray-700">例如: 需要找到 <span className="font-mono font-bold text-orange-600">0000abc...</span> 這樣的 Hash</p>
+ </div>
+
+ {/* 嘗試過程 */}
+ <div className="space-y-3">
+ <div className="flex items-center bg-red-50 rounded-lg p-3 border-l-4 border-red-400">
+ <span className="text-2xl mr-3">❌</span>
+ <div className="flex-1">
+ <p className="text-sm font-mono text-gray-800">
+ 嘗試 Nonce: <span className="font-bold">1</span> → Hash:
+ <span className="text-red-600 ml-2">3a7f2b...</span>
+ </p>
+ <p className="text-xs text-gray-600">開頭不是 0，繼續嘗試...</p>
+ </div>
+ </div>
+
+ <div className="flex items-center bg-red-50 rounded-lg p-3 border-l-4 border-red-400">
+ <span className="text-2xl mr-3">❌</span>
+ <div className="flex-1">
+ <p className="text-sm font-mono text-gray-800">
+ 嘗試 Nonce: <span className="font-bold">2</span> → Hash:
+ <span className="text-red-600 ml-2">8c5d9e...</span>
+ </p>
+ <p className="text-xs text-gray-600">還是不對，繼續...</p>
+ </div>
+ </div>
+
+ <div className="text-center text-gray-400 text-sm">... 嘗試了 12343 次 ...</div>
+
+ <div className="flex items-center bg-green-50 rounded-lg p-3 border-l-4 border-green-500">
+ <span className="text-2xl mr-3">✅</span>
+ <div className="flex-1">
+ <p className="text-sm font-mono text-gray-800">
+ 嘗試 Nonce: <span className="font-bold">12345</span> → Hash:
+ <span className="text-green-600 font-bold ml-2">0000abc...</span>
+ </p>
+ <p className="text-xs text-green-700 font-semibold">成功！可以獲得獎勵了！</p>
+ </div>
+ </div>
+ </div>
+
+ {/* 說明 */}
+ <div className="bg-blue-50 rounded-lg p-4 border-l-4 border-blue-400 mt-4">
+ <p className="text-sm text-gray-800 leading-relaxed">
+ 💡 <strong>真實情況：</strong><br/>
+ 真正的比特幣挖礦需要<strong>19個前導0</strong>，
+ 全球礦工每秒要嘗試<strong>數兆次</strong>，
+ 平均<strong>10分鐘</strong>才有一個礦工成功！
+ </p>
+ </div>
+ </div>
+ </div>
+
+ {/* 卡片 3: 交易驗證與地址生成 */}
+ <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 sm:p-8 border-2 border-green-300 shadow-lg">
+ <div className="mb-6">
+ <div className="flex items-center mb-3">
+ <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-xl mr-3">
+ 3
+ </div>
+ <h4 className="font-bold text-gray-800 text-xl sm:text-2xl">
+ 交易驗證與地址生成
+ </h4>
+ </div>
+ <p className="text-gray-700 text-base leading-relaxed">
+ SHA-256 就像<strong>身份證製造機</strong>，幫每個地址和交易製作獨一無二的ID！
+ </p>
+ </div>
+
+ {/* 視覺化說明 */}
+ <div className="bg-white rounded-xl p-5 border-2 border-green-200 shadow-sm">
+ <p className="text-sm text-gray-600 mb-4 font-semibold">📌 兩種用途：</p>
+
+ <div className="grid sm:grid-cols-2 gap-4">
+ {/* 地址生成 */}
+ <div className="bg-gradient-to-b from-blue-50 to-blue-100 rounded-xl p-5 border-2 border-blue-300">
+ <p className="font-bold text-blue-800 mb-4 text-center">🔐 生成比特幣地址</p>
+
+ <div className="space-y-3">
+ <div className="bg-white rounded-lg p-3 border border-blue-200">
+ <p className="text-xs text-gray-600 mb-1">① 你的公鑰</p>
+ <p className="text-xs font-mono text-gray-800 break-all bg-gray-50 p-2 rounded">
+ 04a1b2c3d4e5f6...
+ </p>
+ </div>
+
+ <div className="text-center">
+ <div className="inline-block bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-bold">
+ ↓ SHA-256 加密 ↓
+ </div>
+ </div>
+
+ <div className="bg-white rounded-lg p-3 border-2 border-blue-400">
+ <p className="text-xs text-gray-600 mb-1">② 你的比特幣地址</p>
+ <p className="text-xs font-mono text-blue-600 font-bold break-all bg-blue-50 p-2 rounded">
+ 1A1zP1eP5Q...
+ </p>
+ </div>
+ </div>
+
+ <p className="text-xs text-gray-600 mt-3 text-center">
+ 就像你的<strong>銀行帳號</strong>
+ </p>
+ </div>
+
+ {/* 交易ID */}
+ <div className="bg-gradient-to-b from-green-50 to-green-100 rounded-xl p-5 border-2 border-green-300">
+ <p className="font-bold text-green-800 mb-4 text-center">📝 生成交易 ID</p>
+
+ <div className="space-y-3">
+ <div className="bg-white rounded-lg p-3 border border-green-200">
+ <p className="text-xs text-gray-600 mb-1">① 交易內容</p>
+ <p className="text-xs text-gray-800 bg-gray-50 p-2 rounded">
+ Alice 轉 1 BTC 給 Bob
+ </p>
+ </div>
+
+ <div className="text-center">
+ <div className="inline-block bg-green-500 text-white px-3 py-1 rounded-full text-xs font-bold">
+ ↓ SHA-256 加密 ↓
+ </div>
+ </div>
+
+ <div className="bg-white rounded-lg p-3 border-2 border-green-400">
+ <p className="text-xs text-gray-600 mb-1">② 交易 ID</p>
+ <p className="text-xs font-mono text-green-600 font-bold break-all bg-green-50 p-2 rounded">
+ 5f3a8b7c9d...
+ </p>
+ </div>
+ </div>
+
+ <p className="text-xs text-gray-600 mt-3 text-center">
+ 就像你的<strong>轉帳收據</strong>
+ </p>
+ </div>
+ </div>
+
+ {/* 說明 */}
+ <div className="bg-yellow-50 rounded-lg p-4 border-l-4 border-yellow-400 mt-4">
+ <p className="text-sm text-gray-800 leading-relaxed">
+ 💡 <strong>為什麼安全？</strong><br/>
+ 因為 SHA-256 是<strong>單向加密</strong>，
+ 別人看到你的地址（1A1zP1eP5Q...），
+ 也<strong>無法反推</strong>出你的公鑰或私鑰！
+ 就像看到身份證號碼，無法知道你的指紋一樣！
+ </p>
  </div>
  </div>
  </div>
