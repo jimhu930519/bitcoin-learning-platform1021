@@ -5,6 +5,8 @@ import { TRADING_CONFIG } from '../constants/config'
 import { Button } from './shared/Button'
 import { InfoBox } from './shared/InfoBox'
 import { Tooltip } from './shared'
+import CandlestickChart from './CandlestickChart'
+import { generateCandleData } from '../utils/generateCandleData'
 
 function TradingSimulator() {
  const { walletA, walletB, executeTrade, getWallet } = useWallet()
@@ -26,7 +28,20 @@ function TradingSimulator() {
  const [message, setMessage] = useState(null)
  const [isProcessing, setIsProcessing] = useState(false)
 
- // 計算當前價格
+  // K線圖相關
+  const [candleData, setCandleData] = useState([])
+  const [timeframe, setTimeframe] = useState('1h') // 1m, 5m, 15m, 1h, 4h, 1d
+
+ 
+  // 初始化 K線數據
+  useEffect(() => {
+    if (prices.btc.usd > 0) {
+      const data = generateCandleData(getCurrentPrice(), 100, timeframe)
+      setCandleData(data)
+    }
+  }, [prices.btc.usd, timeframe])
+
+  // 計算當前價格
  const getCurrentPrice = () => {
  if (tradingPair === 'BTC/USDT') {
  return prices.btc.usd
@@ -337,7 +352,65 @@ function TradingSimulator() {
  </div>
  </div>
 
- {/* 選擇錢包 */}
+ 
+              {/* K線圖 */}
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-3">
+                  <label className="block text-gray-700 font-bold">價格走勢圖</label>
+                  
+                  {/* 時間週期切換 */}
+                  <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
+                    {['1m', '5m', '15m', '1h', '4h', '1d'].map((tf) => (
+                      <button
+                        key={tf}
+                        onClick={() => setTimeframe(tf)}
+                        className={}
+                      >
+                        {tf}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                
+                <CandlestickChart data={candleData} height="400px" />
+                
+                <p className="text-xs text-gray-500 mt-2 text-center">
+                  模擬數據，僅供教學使用
+                </p>
+              </div>
+
+
+              {/* K線圖 */}
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-3">
+                  <label className="block text-gray-700 font-bold">價格走勢圖</label>
+
+                  {/* 時間週期切換 */}
+                  <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
+                    {['1m', '5m', '15m', '1h', '4h', '1d'].map((tf) => (
+                      <button
+                        key={tf}
+                        onClick={() => setTimeframe(tf)}
+                        className={`px-3 py-1 rounded text-xs font-semibold transition-all ${
+                          timeframe === tf
+                            ? 'bg-bitcoin-orange text-white'
+                            : 'text-gray-600 hover:text-gray-800'
+                        }`}
+                      >
+                        {tf}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <CandlestickChart data={candleData} height="400px" />
+
+                <p className="text-xs text-gray-500 mt-2 text-center">
+                  模擬數據，僅供教學使用
+                </p>
+              </div>
+
+              {/* 選擇錢包 */}
  <div className="mb-6">
  <label className="block text-gray-700 font-bold mb-3">選擇錢包</label>
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
