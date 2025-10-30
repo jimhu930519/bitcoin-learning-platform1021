@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { BookOpen, ChevronDown, Gift, Coins, Gauge, TrendingUp, Hash, Link2, FileText, Dices, Target, HelpCircle } from 'lucide-react'
 import { MINING_CONFIG } from '../constants/config'
 import { Button } from './shared/Button'
 import { InfoBox } from './shared/InfoBox'
@@ -295,12 +296,12 @@ function MiningSimulator() {
  className="w-full bg-gradient-to-r from-purple-50 to-indigo-50 hover:from-purple-100 hover:to-indigo-100 rounded-xl p-4 border-2 border-purple-200 transition-all duration-300 flex items-center justify-between"
  >
  <div className="flex items-center">
- <span className="text-2xl mr-3"></span>
+ <BookOpen className="w-6 h-6 text-purple-600 mr-3" />
  <span className="font-bold text-gray-800 text-lg">詳細教學內容</span>
  </div>
- <span className="text-2xl text-purple-600 transition-transform duration-300" style={{ transform: showEducation ? 'rotate(180deg)' : 'rotate(0deg)' }}>
- 
- </span>
+ <ChevronDown
+ className={`w-6 h-6 text-purple-600 transition-transform duration-300 ${showEducation ? 'rotate-180' : ''}`}
+ />
  </button>
 
  {showEducation && (
@@ -352,18 +353,18 @@ function MiningSimulator() {
  className="w-full bg-gradient-to-r from-yellow-50 to-orange-50 hover:from-yellow-100 hover:to-orange-100 rounded-xl p-4 border-2 border-yellow-300 transition-all duration-300 flex items-center justify-between"
  >
  <div className="flex items-center">
- <span className="text-2xl mr-3"></span>
+ <Gift className="w-6 h-6 text-yellow-600 mr-3" />
  <span className="font-bold text-gray-800 text-lg">挖礦獎勵詳細說明</span>
  </div>
- <span className="text-2xl text-yellow-600 transition-transform duration-300" style={{ transform: showRewardInfo ? 'rotate(180deg)' : 'rotate(0deg)' }}>
- 
- </span>
+ <ChevronDown
+ className={`w-6 h-6 text-yellow-600 transition-transform duration-300 ${showRewardInfo ? 'rotate-180' : ''}`}
+ />
  </button>
 
  {showRewardInfo && (
  <div className="mt-4 bg-gradient-to-br from-yellow-50 via-orange-50 to-yellow-50 rounded-2xl p-6 border-2 border-yellow-300 animate-fadeIn">
  <div className="flex items-center mb-6">
- <span className="text-4xl mr-3"></span>
+ <Coins className="w-10 h-10 text-orange-600 mr-3" />
  <h3 className="text-2xl font-bold text-gray-800">挖礦可以得到什麼獎勵？</h3>
  </div>
 
@@ -632,19 +633,19 @@ function MiningSimulator() {
  <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 mb-8">
  <div>
  <label className="block text-gray-700 font-bold mb-2 flex items-center">
- <span className="mr-2"></span>
+ <Hash className="w-5 h-5 text-blue-600 mr-2" />
  區塊編號（就像書的頁碼）
  <button
  onClick={() => setShowFieldHelp(showFieldHelp === 'blockNumber' ? null : 'blockNumber')}
  className="ml-2 text-bitcoin-orange hover:text-orange-600 text-xl"
  >
- 
+ <HelpCircle className="w-5 h-5" />
  </button>
  </label>
  {showFieldHelp === 'blockNumber' && (
  <div className="mb-3 bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg">
  <h5 className="font-bold text-gray-800 mb-2 flex items-center">
- <span className="mr-2"></span>什麼是區塊編號？
+ <Hash className="w-5 h-5 text-blue-600 mr-2" />什麼是區塊編號？
  </h5>
  <p className="text-sm text-gray-700 mb-2">
  就像<strong>書的頁碼</strong>一樣！每個區塊都有自己的編號：
@@ -668,19 +669,19 @@ function MiningSimulator() {
 
  <div>
  <label className="block text-gray-700 font-bold mb-2 flex items-center">
- <span className="mr-2"></span>
+ <Link2 className="w-5 h-5 text-purple-600 mr-2" />
  前一個雜湊值（連結上一頁）
  <button
  onClick={() => setShowFieldHelp(showFieldHelp === 'previousHash' ? null : 'previousHash')}
  className="ml-2 text-bitcoin-orange hover:text-orange-600 text-xl"
  >
- 
+ <HelpCircle className="w-5 h-5" />
  </button>
  </label>
  {showFieldHelp === 'previousHash' && (
  <div className="mb-3 bg-purple-50 border-l-4 border-purple-500 p-4 rounded-lg">
  <h5 className="font-bold text-gray-800 mb-2 flex items-center">
- <span className="mr-2"></span>什麼是前一個雜湊值？
+ <Link2 className="w-5 h-5 text-purple-600 mr-2" />什麼是前一個雜湊值？
  </h5>
  <p className="text-sm text-gray-700 mb-2">
  就像<strong>書頁之間的鎖鏈</strong>！
@@ -708,19 +709,19 @@ function MiningSimulator() {
 
  <div className="md:col-span-2">
  <label className="block text-gray-700 font-bold mb-2 flex items-center">
- <span className="mr-2"></span>
+ <FileText className="w-5 h-5 text-green-600 mr-2" />
  交易資料（這一頁記錄的轉帳）
  <button
  onClick={() => setShowFieldHelp(showFieldHelp === 'transactions' ? null : 'transactions')}
  className="ml-2 text-bitcoin-orange hover:text-orange-600 text-xl"
  >
- 
+ <HelpCircle className="w-5 h-5" />
  </button>
  </label>
  {showFieldHelp === 'transactions' && (
  <div className="mb-3 bg-green-50 border-l-4 border-green-500 p-4 rounded-lg">
  <h5 className="font-bold text-gray-800 mb-2 flex items-center">
- <span className="mr-2"></span>什麼是交易資料？
+ <FileText className="w-5 h-5 text-green-600 mr-2" />什麼是交易資料？
  </h5>
  <p className="text-sm text-gray-700 mb-2">
  就像<strong>帳本上的轉帳記錄</strong>！
@@ -751,19 +752,19 @@ function MiningSimulator() {
  <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 mb-8">
  <div>
  <label className="block text-gray-700 font-bold mb-2 flex items-center">
- <span className="mr-2"></span>
+ <Dices className="w-5 h-5 text-yellow-600 mr-2" />
  <Tooltip term="Nonce" definition="Number used Once 的縮寫，是礦工不斷變更的隨機數。礦工通過嘗試不同的 Nonce 值來尋找符合難度要求的雜湊值。" type="primary" /> 值（挖礦用的幸運數字）
  <button
  onClick={() => setShowFieldHelp(showFieldHelp === 'nonce' ? null : 'nonce')}
  className="ml-2 text-bitcoin-orange hover:text-orange-600 text-xl"
  >
- 
+ <HelpCircle className="w-5 h-5" />
  </button>
  </label>
  {showFieldHelp === 'nonce' && (
  <div className="mb-3 bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-lg">
  <h5 className="font-bold text-gray-800 mb-2 flex items-center">
- <span className="mr-2"></span>什麼是 Nonce？
+ <Dices className="w-5 h-5 text-yellow-600 mr-2" />什麼是 Nonce？
  </h5>
  <p className="text-sm text-gray-700 mb-2">
  就像<strong>樂透的號碼</strong>一樣！
@@ -808,19 +809,19 @@ function MiningSimulator() {
 
  <div>
  <label className="block text-gray-700 font-bold mb-2 flex items-center">
- <span className="mr-2"></span>
+ <Target className="w-5 h-5 text-red-600 mr-2" />
  <Tooltip term="挖礦難度" definition="決定雜湊值需要多少個前導0的參數。前導0越多，找到符合要求的雜湊值就越困難。比特幣網絡每2016個區塊（約2週）自動調整一次難度。" type="primary" />（謎題的困難程度）
  <button
  onClick={() => setShowFieldHelp(showFieldHelp === 'difficulty' ? null : 'difficulty')}
  className="ml-2 text-bitcoin-orange hover:text-orange-600 text-xl"
  >
- 
+ <HelpCircle className="w-5 h-5" />
  </button>
  </label>
  {showFieldHelp === 'difficulty' && (
  <div className="mb-3 bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
  <h5 className="font-bold text-gray-800 mb-2 flex items-center">
- <span className="mr-2"></span>什麼是挖礦難度？
+ <Target className="w-5 h-5 text-red-600 mr-2" />什麼是挖礦難度？
  </h5>
  <p className="text-sm text-gray-700 mb-2">
  就像<strong>謎題的難度級別</strong>！
@@ -1127,12 +1128,12 @@ function MiningSimulator() {
  className="w-full bg-gradient-to-r from-red-50 to-orange-50 hover:from-red-100 hover:to-orange-100 rounded-xl p-4 border-2 border-red-300 transition-all duration-300 flex items-center justify-between"
  >
  <div className="flex items-center">
- <span className="text-2xl mr-3"></span>
+ <Gauge className="w-6 h-6 text-red-600 mr-3" />
  <span className="font-bold text-gray-800 text-lg">算力對比與難度說明</span>
  </div>
- <span className="text-2xl text-red-600 transition-transform duration-300" style={{ transform: showComparison ? 'rotate(180deg)' : 'rotate(0deg)' }}>
- 
- </span>
+ <ChevronDown
+ className={`w-6 h-6 text-red-600 transition-transform duration-300 ${showComparison ? 'rotate-180' : ''}`}
+ />
  </button>
 
  {showComparison && (
@@ -1140,7 +1141,7 @@ function MiningSimulator() {
  {/* 真實比特幣網絡算力對比 */}
  <div className="bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50 rounded-2xl p-6 border-2 border-red-300">
  <h3 className="font-bold text-gray-800 mb-4 text-xl flex items-center">
- <span className="mr-2"></span>
+ <TrendingUp className="w-7 h-7 text-red-600 mr-2" />
  你的瀏覽器 vs 真實比特幣網絡
  </h3>
  <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-6">

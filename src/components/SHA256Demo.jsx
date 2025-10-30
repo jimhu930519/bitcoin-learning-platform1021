@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { BookOpen, ChevronDown } from 'lucide-react'
 import { Tooltip } from './shared'
 
 function SHA256Demo() {
@@ -435,12 +436,12 @@ function SHA256Demo() {
  className="w-full bg-gradient-to-r from-indigo-50 to-purple-50 hover:from-indigo-100 hover:to-purple-100 rounded-xl p-4 border-2 border-indigo-200 transition-all duration-300 flex items-center justify-between"
  >
  <div className="flex items-center">
- <span className="text-2xl mr-3"></span>
+ <BookOpen className="w-6 h-6 text-indigo-600 mr-3" />
  <span className="font-bold text-gray-800 text-lg">SHA-256 在比特幣中的應用</span>
  </div>
- <span className="text-2xl text-indigo-600 transition-transform duration-300" style={{ transform: showEducation ? 'rotate(180deg)' : 'rotate(0deg)' }}>
- 
- </span>
+ <ChevronDown
+ className={`w-6 h-6 text-indigo-600 transition-transform duration-300 ${showEducation ? 'rotate-180' : ''}`}
+ />
  </button>
 
  {showEducation && (

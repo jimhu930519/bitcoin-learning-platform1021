@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { BookOpen, ChevronDown } from 'lucide-react'
 import { useWallet } from '../contexts/WalletContext'
 import { Tooltip } from './shared'
 
@@ -172,12 +173,12 @@ function TransferSimulator() {
  >
  <div className="flex items-center justify-between">
  <div className="flex items-center">
- <span className="text-2xl mr-3"></span>
+ <BookOpen className="w-6 h-6 text-blue-600 mr-3" />
  <span className="font-bold text-gray-800 text-lg">區塊鏈轉帳知識</span>
  </div>
- <span className="text-xl transition-transform duration-300" style={{ transform: showEducation ? 'rotate(180deg)' : 'rotate(0deg)' }}>
- 
- </span>
+ <ChevronDown
+ className={`w-6 h-6 text-blue-600 transition-transform duration-300 ${showEducation ? 'rotate-180' : ''}`}
+ />
  </div>
  </button>
 
