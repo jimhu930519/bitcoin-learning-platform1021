@@ -773,18 +773,18 @@ function MiningSimulator() {
  <Dices className="w-5 h-5 text-yellow-600 mr-2" />什麼是 Nonce？
  </h5>
  <p className="text-sm text-gray-700 mb-2">
- 就像<strong>樂透的號碼</strong>一樣！
+ <strong>Nonce</strong> = "Number used Once"（只用一次的數字）
  </p>
  <p className="text-sm text-gray-700 mb-2">
- 礦工不斷嘗試不同的數字：
+ 在比特幣中是 <strong>32位元整數</strong>（範圍：0 ~ 4,294,967,295）<br/><br/><strong>挖礦過程：</strong>
  </p>
- <p className="text-sm text-gray-700 pl-4 mb-1">• 嘗試 Nonce = 0 → 雜湊不符合 </p>
- <p className="text-sm text-gray-700 pl-4 mb-1">• 嘗試 Nonce = 1 → 雜湊不符合 </p>
- <p className="text-sm text-gray-700 pl-4 mb-1">• 嘗試 Nonce = 2 → 雜湊不符合 </p>
- <p className="text-sm text-gray-700 pl-4 mb-2">• ...嘗試到 Nonce = 12847 → 雜湊符合！</p>
+ <p className="text-sm text-gray-700 pl-4 mb-1">• Nonce = 0 → Hash 不符合 ❌ </p>
+ <p className="text-sm text-gray-700 pl-4 mb-1">• Nonce = 1 → Hash 不符合 ❌ </p>
+ <p className="text-sm text-gray-700 pl-4 mb-1">• Nonce = 2 → Hash 不符合 ❌ </p>
+ <p className="text-sm text-gray-700 pl-4 mb-2">• ...<br/>• Nonce = 12847 → Hash 符合！✓</p>
  <p className="text-sm text-gray-700">
- <strong>找到「中獲」的 Nonce 就成功挖到區塊！</strong>
- 這就是「挖礦」的過程 — 不斷嘗試不同的數字！
+ <strong>核心概念：</strong>
+ 改變 Nonce 就能得到完全不同的 Hash 值，礦工透過不斷嘗試來「暴力破解」符合難度的 Hash
  </p>
  </div>
  )}
