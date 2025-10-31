@@ -117,11 +117,13 @@ function SHA256Demo() {
  if (!inputText || !inputText2) return { lengthDiff: 0, contentDiff: 0, total: 0 }
 
  const lengthDiff = Math.abs(inputText.length - inputText2.length)
- const minLength = Math.min(inputText.length, inputText2.length)
+ const maxLength = Math.max(inputText.length, inputText2.length)
 
  let contentDiff = 0
- for (let i = 0; i < minLength; i++) {
- if (inputText[i] !== inputText2[i]) {
+ for (let i = 0; i < maxLength; i++) {
+ const char1 = inputText[i] || ''
+ const char2 = inputText2[i] || ''
+ if (char1 !== char2) {
  contentDiff++
  }
  }
@@ -129,7 +131,7 @@ function SHA256Demo() {
  return {
  lengthDiff,
  contentDiff,
- total: contentDiff + lengthDiff
+ total: contentDiff
  }
  }
 
