@@ -135,16 +135,16 @@ export const WalletProvider = ({ children }) => {
     }
   }, [getWallet, getCorrectAddress, updateWalletBalance])
 
-  // 執行交易 (買入/賣出) - 新增功能！
+  // 執行交易 (買入/賣出) - 僅支援 BTC/USDT
   const executeTrade = useCallback((
-    walletId, 
-    tradingPair, 
-    action, 
-    amount, 
+    walletId,
+    tradingPair,
+    action,
+    amount,
     price
   ) => {
     const wallet = getWallet(walletId)
-    const currency = tradingPair === 'BTC/USDT' ? 'USDT' : 'TWD'
+    const currency = 'USDT' // 僅支援 USDT 交易
     const fee = amount * price * TRADING_CONFIG.FEE_RATE
     const total = amount * price
 

@@ -41,13 +41,11 @@ export const INITIAL_WALLET_BALANCES = {
     BTC: 1.0,
     ETH: 2.0,
     USDT: 10000,
-    TWD: 300000,
   },
   B: {
     BTC: 0.5,
     ETH: 1.5,
     USDT: 5000,
-    TWD: 150000,
   },
 }
 

@@ -25,13 +25,13 @@ export const useCryptoPrice = (updateInterval = 30000) => {
   const cacheRef = useRef(null)
   const lastFetchTimeRef = useRef(0)
 
-  // 備用數據
+  // 備用數據（根據當前市場價格更新）
   const FALLBACK_PRICES = {
-    btc: { usd: 97000, twd: 3150000 },
-    usdt: { twd: 32.5 }
+    btc: { usd: 109000, twd: 3542500 },
+    usdt: { twd: 30.80 }
   }
 
-  // API 列表（多重備援）- Binance 優先（更快速、即時）
+  // API 列表（多重備援）- 使用可靠且無 CORS 限制的 API
   const API_SOURCES = [
     {
       name: 'Binance',
@@ -46,63 +46,42 @@ export const useCryptoPrice = (updateInterval = 30000) => {
         // 更新 24h 變化
         setPriceChange24h(change24h)
 
-        // 使用固定匯率 32.5 (更快，避免額外 API 調用)
-        const twdRate = 32.5
+        // 獲取真實的 USD/TWD 匯率
+        const rateResponse = await fetch('https://api.exchangerate-api.com/v4/latest/USD')
+        const rateData = await rateResponse.json()
+        const twdRate = rateData.rates?.TWD || 30.80
         const twd = usd * twdRate
 
         return { usd, twd }
       },
       fetchUSDT: async () => {
-        // USDT 穩定幣匯率相對固定
-        return { twd: 32.5 }
+        // 獲取真實的 USD/TWD 匯率 (USDT ≈ 1 USD)
+        const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD')
+        if (!response.ok) throw new Error(`HTTP ${response.status}`)
+        const data = await response.json()
+        return { twd: data.rates?.TWD || 30.80 }
       }
     },
     {
-      name: 'Binance (多幣對)',
+      name: 'Blockchain.com',
       fetchBTC: async () => {
-        // 備援方案：同時查詢 USDT 和 BUSD 價格取平均
-        const responses = await Promise.all([
-          fetch('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT'),
-          fetch('https://api.binance.com/api/v3/ticker/price?symbol=BTCBUSD').catch(() => null)
-        ])
-
-        const usdtData = await responses[0].json()
-        const busdData = responses[1] ? await responses[1].json() : null
-
-        let usd = parseFloat(usdtData.price)
-        if (busdData) {
-          const busdPrice = parseFloat(busdData.price)
-          usd = (usd + busdPrice) / 2 // 取平均提高準確度
-        }
-
-        return { usd, twd: usd * 32.5 }
-      },
-      fetchUSDT: async () => {
-        return { twd: 32.5 }
-      }
-    },
-    {
-      name: 'CoinGecko',
-      fetchBTC: async () => {
-        const response = await fetch(
-          'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd,twd',
-          { headers: { 'Accept': 'application/json' } }
-        )
+        const response = await fetch('https://blockchain.info/ticker')
         if (!response.ok) throw new Error(`HTTP ${response.status}`)
         const data = await response.json()
-        return {
-          usd: data.bitcoin?.usd,
-          twd: data.bitcoin?.twd
-        }
+        const usd = data.USD?.last
+        const twd = data.TWD?.last
+
+        return { usd, twd }
       },
       fetchUSDT: async () => {
-        const response = await fetch(
-          'https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=twd',
-          { headers: { 'Accept': 'application/json' } }
-        )
+        // 使用 BTC 價格來計算 USD/TWD 匯率
+        const response = await fetch('https://blockchain.info/ticker')
         if (!response.ok) throw new Error(`HTTP ${response.status}`)
         const data = await response.json()
-        return { twd: data.tether?.twd }
+        const usdRate = data.USD?.last
+        const twdRate = data.TWD?.last
+        const usdToTwd = twdRate / usdRate
+        return { twd: usdToTwd }
       }
     }
   ]

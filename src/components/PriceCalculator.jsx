@@ -97,7 +97,7 @@ function PriceCalculator() {
  </span>
  {apiSource && !error && (
  <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full font-semibold">
- {apiSource}
+ API 來源: {apiSource}
  </span>
  )}
  </div>
@@ -144,7 +144,14 @@ function PriceCalculator() {
  <div className="space-y-3">
  <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
  <div className="flex items-center justify-between mb-1">
+ <div className="flex items-center gap-2">
  <p className="text-sm opacity-80">BTC / USDT</p>
+ {apiSource && !error && (
+ <span className="text-xs px-2 py-0.5 bg-blue-400/30 text-blue-100 rounded font-semibold">
+ Binance
+ </span>
+ )}
+ </div>
  {priceChange24h !== null && (
  <span className={`text-xs font-bold px-2 py-1 rounded ${
  priceChange24h >= 0 ? 'bg-green-400/30' : 'bg-red-400/30'
@@ -159,7 +166,16 @@ function PriceCalculator() {
  </div>
 
  <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
- <p className="text-sm opacity-80 mb-1">BTC / TWD</p>
+ <div className="flex items-center justify-between mb-1">
+ <div className="flex items-center gap-2">
+ <p className="text-sm opacity-80">BTC / TWD</p>
+ {apiSource && !error && (
+ <span className="text-xs px-2 py-0.5 bg-blue-400/30 text-blue-100 rounded font-semibold">
+ Binance + ExRate
+ </span>
+ )}
+ </div>
+ </div>
  <p className="text-3xl font-bold">
  {formatCurrency(prices.btc.twd)}
  </p>
@@ -182,9 +198,21 @@ function PriceCalculator() {
  
  <div className="space-y-3">
  <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
- <p className="text-sm opacity-80 mb-1">USDT / TWD</p>
+ <div className="flex items-center justify-between mb-1">
+ <div className="flex items-center gap-2">
+ <p className="text-sm opacity-80">USDT / TWD</p>
+ {apiSource && !error && (
+ <span className="text-xs px-2 py-0.5 bg-blue-400/30 text-blue-100 rounded font-semibold">
+ ExchangeRate-API
+ </span>
+ )}
+ </div>
+ </div>
  <p className="text-3xl font-bold">
- {formatCurrency(prices.usdt.twd)}
+ ${new Intl.NumberFormat('en-US', {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2
+ }).format(prices.usdt.twd)}
  </p>
  </div>
  

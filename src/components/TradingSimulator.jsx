@@ -15,7 +15,7 @@ function TradingSimulator() {
  const { prices, loading: priceLoading, error: priceError, refresh, priceChange24h } = useCryptoPrice(30000)
  
  // 交易設定
- const [tradingPair, setTradingPair] = useState('BTC/USDT')
+ const tradingPair = 'BTC/USDT'  // 固定使用 BTC/USDT
  const [orderType, setOrderType] = useState('market')
  const [tradeAction, setTradeAction] = useState('buy')
  const [amount, setAmount] = useState('')
@@ -99,14 +99,14 @@ function TradingSimulator() {
  // 計算投資組合總價值 (以 USDT 計算)
  const calculatePortfolioValue = () => {
  const btcValue = balance.BTC * prices.btc.usd
- return btcValue + balance.USDT + (balance.TWD / 32.5) // TWD 轉換為 USDT
+ return btcValue + balance.USDT
  }
 
  // 快速設置交易數量
  const setQuickAmount = (percentage) => {
  if (tradeAction === 'buy') {
  // 買入：根據可用資金計算可買數量
- const availableFunds = balance[tradingPair === 'BTC/USDT' ? 'USDT' : 'TWD']
+ const availableFunds = balance.USDT
  const price = orderType === 'limit' && limitPrice ? parseFloat(limitPrice) : getCurrentPrice()
  if (price > 0) {
  const maxBTC = (availableFunds * percentage) / (price * (1 + TRADING_CONFIG.FEE_RATE))
@@ -443,30 +443,12 @@ function TradingSimulator() {
  </div>
  </div>
 
- {/* 交易對選擇 */}
+ {/* 交易對顯示 */}
  <div className="mb-6">
  <label className="block text-gray-700 font-bold mb-3">交易對</label>
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <button
- onClick={() => setTradingPair('BTC/USDT')}
- className={`p-4 rounded-xl border-2 transition-all ${
- tradingPair === 'BTC/USDT'
- ? 'border-green-500 bg-green-50'
- : 'border-gray-300 hover:border-gray-400'
- }`}
- >
- <p className="font-bold">BTC / USDT</p>
- </button>
- <button
- onClick={() => setTradingPair('BTC/TWD')}
- className={`p-4 rounded-xl border-2 transition-all ${
- tradingPair === 'BTC/TWD'
- ? 'border-blue-500 bg-blue-50'
- : 'border-gray-300 hover:border-gray-400'
- }`}
- >
- <p className="font-bold">BTC / TWD</p>
- </button>
+ <div className="p-4 rounded-xl border-2 border-green-500 bg-green-50">
+ <p className="font-bold text-center">BTC / USDT</p>
+ <p className="text-xs text-gray-600 text-center mt-1">全球最流行的比特幣交易對</p>
  </div>
  </div>
 
@@ -576,7 +558,7 @@ function TradingSimulator() {
 
  <p className="text-sm text-gray-600 mt-2">
  可用: {tradeAction === 'buy'
- ? `${balance[tradingPair === 'BTC/USDT' ? 'USDT' : 'TWD'].toFixed(2)} ${tradingPair === 'BTC/USDT' ? 'USDT' : 'TWD'}`
+ ? `${balance.USDT.toFixed(2)} USDT`
  : `${balance.BTC} BTC`}
  </p>
  </div>
@@ -585,7 +567,7 @@ function TradingSimulator() {
  {orderType === 'limit' && (
  <div className="mb-6">
  <label className="block text-gray-700 font-bold mb-3">
- 限價 ({tradingPair === 'BTC/USDT' ? 'USDT' : 'TWD'})
+ 限價 (USDT)
  </label>
  <input
  type="number"
@@ -631,7 +613,7 @@ function TradingSimulator() {
  <span className="text-gray-800 font-bold">總計:</span>
  <span className="text-xl font-bold text-bitcoin-orange">
  {(total + (tradeAction === 'buy' ? fee : -fee)).toFixed(2)} 
- {tradingPair === 'BTC/USDT' ? ' USDT' : ' TWD'}
+ USDT
  </span>
  </div>
  </div>
@@ -669,7 +651,7 @@ function TradingSimulator() {
  {/* 右側：錢包餘額、掛單列表和訂單歷史 */}
  <div className="space-y-6">
  {/* 錢包餘額 */}
- <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 border-2 border-blue-200">
+ <div className="lg:sticky lg:top-40 bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 border-2 border-blue-200 shadow-lg z-10">
  <h3 className="text-xl font-bold text-gray-800 mb-4">
  錢包 {selectedWallet} 餘額
  </h3>
@@ -682,40 +664,31 @@ function TradingSimulator() {
  ${calculatePortfolioValue().toFixed(2)} USDT
  </p>
  <p className="text-xs text-gray-500 mt-1">
- ≈ NT${(calculatePortfolioValue() * 32.5).toFixed(0)}
+ ≈ NT${(calculatePortfolioValue() * prices.usdt.twd).toFixed(0)}
  </p>
  </div>
  )}
 
  <div className="space-y-3">
- <div className="bg-white rounded-lg p-4">
- <div className="flex items-center justify-between mb-1">
- <p className="text-sm text-gray-600">BTC</p>
- {prices.btc.usd > 0 && (
- <p className="text-xs text-gray-500">
- ≈ ${(balance.BTC * prices.btc.usd).toFixed(2)}
- </p>
- )}
- </div>
- <p className="text-2xl font-bold text-bitcoin-orange">
- {balance.BTC.toFixed(6)}
- </p>
- </div>
- <div className="bg-white rounded-lg p-4">
- <p className="text-sm text-gray-600">USDT</p>
- <p className="text-2xl font-bold text-green-600">
- ${balance.USDT.toFixed(2)}
- </p>
- </div>
- <div className="bg-white rounded-lg p-4">
- <p className="text-sm text-gray-600">TWD</p>
- <p className="text-2xl font-bold text-blue-600">
- NT${balance.TWD.toFixed(0)}
- </p>
- <p className="text-xs text-gray-500 mt-1">
- ≈ ${(balance.TWD / 32.5).toFixed(2)} USDT
- </p>
- </div>
+          <div className="bg-white rounded-lg p-4">
+            <div className="flex items-center justify-between mb-1">
+              <p className="text-sm text-gray-600">BTC</p>
+              {prices.btc.usd > 0 && (
+                <p className="text-xs text-gray-500">
+                  ≈ ${(balance.BTC * prices.btc.usd).toFixed(2)}
+                </p>
+              )}
+            </div>
+            <p className="text-2xl font-bold text-bitcoin-orange">
+              {balance.BTC.toFixed(6)}
+            </p>
+          </div>
+          <div className="bg-white rounded-lg p-4">
+            <p className="text-sm text-gray-600">USDT</p>
+            <p className="text-2xl font-bold text-green-600">
+              ${balance.USDT.toFixed(2)}
+            </p>
+          </div>
  </div>
  </div>
 
