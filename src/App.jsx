@@ -35,23 +35,40 @@ function App() {
  <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
  <Navbar />
  
- {/* Tab 導覽 */}
- <div className="fixed top-16 sm:top-20 left-0 right-0 z-40 bg-gradient-to-b from-orange-50 to-white shadow-md border-b-2 border-orange-200">
+ {/* Tab 導覽 - 增強版 */}
+ <div className="fixed top-16 sm:top-20 left-0 right-0 z-40 bg-white/95 backdrop-blur-md shadow-card border-b border-gray-200/50">
  <div className="container mx-auto px-4">
  <div className="flex overflow-x-auto hide-scrollbar">
  {tabs.map((tab) => (
  <button
  key={tab.id}
  onClick={() => handleTabChange(tab.id)}
- className={`relative flex items-center justify-center px-3 sm:px-6 py-4 font-semibold transition-all whitespace-nowrap text-sm sm:text-base ${
+ className={`relative flex items-center justify-center px-3 sm:px-6 py-4 font-semibold transition-all duration-300 whitespace-nowrap text-sm sm:text-base group ${
  activeTab === tab.id
- ? 'text-bitcoin-orange'
- : 'text-gray-600 hover:text-bitcoin-orange hover:bg-orange-50/50'
+ ? 'text-bitcoin-600'
+ : 'text-gray-600 hover:text-bitcoin-500 hover:bg-bitcoin-50/50'
  }`}
  >
+ {/* 圖標區 - 可選 */}
+ <span className="mr-2 transform group-hover:scale-110 transition-transform duration-300">
+ {tab.icon}
+ </span>
+
  <span>{tab.label}</span>
+
+ {/* 底部指示器 - 增強版 */}
  {activeTab === tab.id && (
- <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-bitcoin-orange via-orange-500 to-orange-600 shadow-md"></div>
+ <>
+ {/* 主線 */}
+ <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-bitcoin-600 via-orange-500 to-orange-600 shadow-md animate-scaleIn"></div>
+ {/* 發光效果 */}
+ <div className="absolute bottom-0 left-0 right-0 h-1 bg-bitcoin-600 blur-sm opacity-50"></div>
+ </>
+ )}
+
+ {/* 懸停效果 */}
+ {activeTab !== tab.id && (
+ <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-bitcoin-300 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
  )}
  </button>
  ))}

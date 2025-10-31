@@ -117,8 +117,18 @@ function PriceCalculator() {
 
  {/* 即時價格卡片 */}
  <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 mb-10">
- {/* BTC 價格卡片 */}
- <div className="bg-gradient-to-br from-bitcoin-orange to-orange-600 rounded-2xl p-8 text-white shadow-xl transform hover:scale-105 transition-transform duration-300">
+ {/* BTC 價格卡片 - 增強版 */}
+ <div className="relative group">
+ {/* 發光背景 */}
+ <div className="absolute -inset-0.5 bg-gradient-to-r from-bitcoin-600 to-orange-600 rounded-2xl opacity-75 group-hover:opacity-100 blur transition-opacity duration-300"></div>
+
+ {/* 主卡片 */}
+ <div className="relative bg-gradient-to-br from-bitcoin-600 to-orange-600 rounded-2xl p-8 text-white shadow-elevated transform hover:scale-105 transition-all duration-300 overflow-hidden">
+ {/* 玻璃反光效果 */}
+ <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-white/20 to-transparent rounded-t-2xl pointer-events-none"></div>
+
+ {/* 內容區 */}
+ <div className="relative z-10">
  <div className="flex items-center justify-between mb-4">
  <div className="flex items-center">
  <span className="text-4xl mr-3"></span>
@@ -185,9 +195,21 @@ function PriceCalculator() {
  </div>
  </div>
  </div>
+ </div>
+ </div>
 
- {/* USDT 價格卡片 */}
- <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-8 text-white shadow-xl transform hover:scale-105 transition-transform duration-300">
+ {/* USDT 價格卡片 - 增強版 */}
+ <div className="relative group">
+ {/* 發光背景 */}
+ <div className="absolute -inset-0.5 bg-gradient-to-r from-success-600 to-green-600 rounded-2xl opacity-75 group-hover:opacity-100 blur transition-opacity duration-300"></div>
+
+ {/* 主卡片 */}
+ <div className="relative bg-gradient-to-br from-success-500 to-success-600 rounded-2xl p-8 text-white shadow-elevated transform hover:scale-105 transition-all duration-300 overflow-hidden">
+ {/* 玻璃反光效果 */}
+ <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-white/20 to-transparent rounded-t-2xl pointer-events-none"></div>
+
+ {/* 內容區 */}
+ <div className="relative z-10">
  <div className="flex items-center justify-between mb-4">
  <div className="flex items-center">
  <span className="text-4xl mr-3"></span>
@@ -221,6 +243,8 @@ function PriceCalculator() {
  <p className="text-sm leading-relaxed">
  USDT 是穩定幣，價值錨定美元 (1 USDT ≈ 1 USD)
  </p>
+ </div>
+ </div>
  </div>
  </div>
  </div>
