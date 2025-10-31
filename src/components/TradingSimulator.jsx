@@ -651,44 +651,76 @@ function TradingSimulator() {
  {/* 右側：錢包餘額、掛單列表和訂單歷史 */}
  <div className="space-y-6">
  {/* 錢包餘額 */}
- <div className="lg:sticky lg:top-40 bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 border-2 border-blue-200 shadow-lg z-10">
- <h3 className="text-xl font-bold text-gray-800 mb-4">
+ <div className="lg:sticky lg:top-40 z-10">
+ {/* 外層容器 - 玻璃擬態效果 */}
+ <div className="backdrop-blur-md bg-white/90 rounded-2xl p-6 border border-gray-200/50 shadow-card hover:shadow-card-hover transition-all duration-300">
+ <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+ <span className="mr-2">💰</span>
  錢包 {selectedWallet} 餘額
  </h3>
 
- {/* 投資組合總價值 */}
+ {/* 投資組合總價值 - 優化漸層和動畫 */}
  {prices.btc.usd > 0 && (
- <div className="bg-gradient-to-r from-purple-100 to-indigo-100 rounded-lg p-4 mb-3 border-2 border-purple-300">
- <p className="text-xs text-gray-600 mb-1">投資組合總價值</p>
- <p className="text-2xl font-bold text-purple-700">
+ <div className="relative overflow-hidden rounded-xl p-4 mb-3 bg-gradient-to-r from-purple-500/10 via-indigo-500/10 to-purple-500/10 border border-purple-300/30 animate-slideUp">
+ {/* 動態背景效果 */}
+ <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-indigo-500/5 animate-pulse"></div>
+
+ <div className="relative z-10">
+ <p className="text-xs text-gray-600 mb-1 flex items-center">
+ <span className="mr-1">📊</span>
+ 投資組合總價值
+ </p>
+ <p className="text-2xl font-bold text-purple-700 tabular-nums">
  ${calculatePortfolioValue().toFixed(2)} USDT
  </p>
- <p className="text-xs text-gray-500 mt-1">
+ <p className="text-xs text-gray-500 mt-1 tabular-nums">
  ≈ NT${(calculatePortfolioValue() * prices.usdt.twd).toFixed(0)}
  </p>
  </div>
+ </div>
  )}
 
+ {/* 個別資產卡片 */}
  <div className="space-y-3">
-          <div className="bg-white rounded-lg p-4">
-            <div className="flex items-center justify-between mb-1">
-              <p className="text-sm text-gray-600">BTC</p>
-              {prices.btc.usd > 0 && (
-                <p className="text-xs text-gray-500">
-                  ≈ ${(balance.BTC * prices.btc.usd).toFixed(2)}
-                </p>
-              )}
-            </div>
-            <p className="text-2xl font-bold text-bitcoin-orange">
-              {balance.BTC.toFixed(6)}
-            </p>
-          </div>
-          <div className="bg-white rounded-lg p-4">
-            <p className="text-sm text-gray-600">USDT</p>
-            <p className="text-2xl font-bold text-green-600">
-              ${balance.USDT.toFixed(2)}
-            </p>
-          </div>
+ {/* BTC 卡片 */}
+ <div className="group relative overflow-hidden bg-white rounded-xl p-4 border border-bitcoin-200/50 hover:border-bitcoin-300 shadow-sm hover:shadow-md transition-all duration-300 animate-slideUp">
+ {/* Hover 發光效果 */}
+ <div className="absolute inset-0 bg-gradient-to-r from-bitcoin-500/0 to-bitcoin-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+
+ <div className="relative z-10">
+ <div className="flex items-center justify-between mb-1">
+ <div className="flex items-center">
+ <span className="mr-2 text-lg">₿</span>
+ <p className="text-sm font-medium text-gray-600">BTC</p>
+ </div>
+ {prices.btc.usd > 0 && (
+ <p className="text-xs text-gray-500 tabular-nums">
+ ≈ ${(balance.BTC * prices.btc.usd).toFixed(2)}
+ </p>
+ )}
+ </div>
+ <p className="text-2xl font-bold text-bitcoin-600 tabular-nums">
+ {balance.BTC.toFixed(6)}
+ </p>
+ </div>
+ </div>
+
+ {/* USDT 卡片 */}
+ <div className="group relative overflow-hidden bg-white rounded-xl p-4 border border-green-200/50 hover:border-green-300 shadow-sm hover:shadow-md transition-all duration-300 animate-slideUp">
+ {/* Hover 發光效果 */}
+ <div className="absolute inset-0 bg-gradient-to-r from-green-500/0 to-green-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+
+ <div className="relative z-10">
+ <div className="flex items-center mb-1">
+ <span className="mr-2 text-lg">💵</span>
+ <p className="text-sm font-medium text-gray-600">USDT</p>
+ </div>
+ <p className="text-2xl font-bold text-success-600 tabular-nums">
+ ${balance.USDT.toFixed(2)}
+ </p>
+ </div>
+ </div>
+ </div>
  </div>
  </div>
 
