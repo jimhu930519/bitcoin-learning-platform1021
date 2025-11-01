@@ -97,6 +97,29 @@ function App() {
  </div>
  </div>
 
+
+ {/* 投資風險警示 */}
+ <div className="bg-gradient-to-r from-red-50 to-orange-50 rounded-xl p-5 border-2 border-red-300 shadow-lg">
+ <div className="flex items-start space-x-4">
+ <div className="flex-shrink-0">
+ <div className="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center animate-pulse">
+ <span className="text-white text-2xl">⚠️</span>
+ </div>
+ </div>
+ <div>
+ <h3 className="font-bold text-red-900 text-lg mb-2">投資風險警示</h3>
+ <p className="text-red-800 text-sm leading-relaxed mb-2">
+ <strong>本平台僅供教育學習使用</strong>，不構成任何投資建議。
+ 比特幣及加密貨幣投資具有<strong>極高風險</strong>，價格波動劇烈（年化波動率 65-70%），
+ 可能導致重大損失。
+ </p>
+ <p className="text-red-700 text-xs">
+ 投資前請充分了解風險，並根據自身財務狀況謹慎評估。過去表現不代表未來結果。
+ </p>
+ </div>
+ </div>
+ </div>
+
  {/* 學習進度提示 */}
  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-5 border-2 border-blue-200">
  <div className="flex items-center justify-between mb-3">
@@ -210,6 +233,19 @@ function App() {
  <p className="pl-4">• 沒有任何人可以控制</p>
  <p className="pl-4">• 更安全、更透明</p>
  </div>
+
+                <div className="bg-blue-100 border-l-4 border-blue-500 p-3 rounded mt-3">
+                  <div className="flex items-start">
+                    <span className="text-blue-600 text-xl mr-2 flex-shrink-0">ℹ️</span>
+                    <div className="text-sm text-blue-800">
+                      <p className="font-bold mb-1">實際運作說明：</p>
+                      <p className="leading-relaxed">
+                        雖然比特幣技術上去中心化，但實務中仍面臨一些挑戰：少數大型礦池控制大部分算力、
+                        多數用戶透過中心化交易所交易、各國監管政策影響使用。完全的去中心化仍在持續演進中。
+                      </p>
+                    </div>
+                  </div>
+                </div>
  </div>
 
  <div className="bg-purple-50 rounded-xl p-4 border-l-4 border-purple-500">
@@ -335,9 +371,23 @@ function App() {
  <p className="text-gray-700 leading-relaxed mb-2">
  <strong>通膨</strong>就是錢越來越不值錢。例如 10 年前 100 元可以買的東西，現在可能要 150 元。
  </p>
- <p className="text-gray-700 leading-relaxed">
- 因為比特幣<strong>數量固定</strong>，政府無法像印鈔票一樣增加比特幣數量，所以它能保持價值，就像黃金一樣！
+ <p className="text-gray-700 leading-relaxed mb-3">
+ 因為比特幣<strong>數量固定</strong>，政府無法像印鈔票一樣增加比特幣數量，所以它<strong>理論上具有抗通膨潛力</strong>，類似黃金的特性。
  </p>
+
+                {/* 風險提示 */}
+                <div className="bg-red-100 border-l-4 border-red-500 p-3 rounded">
+                  <div className="flex items-start">
+                    <span className="text-red-600 text-xl mr-2 flex-shrink-0">⚠️</span>
+                    <div className="text-sm text-red-800">
+                      <p className="font-bold mb-1">重要風險提示：</p>
+                      <p className="leading-relaxed">
+                        比特幣價格<strong>波動性極高</strong>（年化波動率約 65-70%），短期內可能大幅漲跌。
+                        <strong>並非保證保值</strong>，投資前請充分了解風險並謹慎評估自身承受能力。
+                      </p>
+                    </div>
+                  </div>
+                </div>
  </div>
 
  <div className="bg-purple-50 rounded-xl p-4 border-l-4 border-purple-500">
@@ -448,6 +498,31 @@ function App() {
  <div className="container mx-auto px-6 text-center">
  <p className="text-lg mb-2">比特幣入門與視覺化互動平台</p>
  <p className="text-gray-400">© 2025 - 打造你的加密貨幣知識之旅</p>
+ {/* 免責聲明 */}
+ <div className="bg-orange-900/30 border-t border-orange-700/50 py-6 mt-8">
+ <div className="container mx-auto px-6">
+ <div className="max-w-4xl mx-auto">
+ <div className="flex items-start space-x-3">
+ <span className="text-yellow-400 text-2xl flex-shrink-0">⚠️</span>
+ <div className="text-sm text-gray-300 leading-relaxed">
+ <p className="font-bold text-white mb-2">投資風險聲明與免責事項</p>
+ <p className="mb-2">
+ 本平台<strong className="text-yellow-400">僅供教育與學習用途</strong>，不構成任何形式的投資建議、財務諮詢或交易推薦。
+ </p>
+ <p className="mb-2">
+ 比特幣及其他加密貨幣投資具有<strong className="text-red-400">極高風險</strong>，價格波動劇烈，
+ 可能導致部分或全部本金損失。過去的表現不代表未來的結果。
+ </p>
+ <p>
+ 在進行任何投資決策前，請充分了解相關風險，並根據自身財務狀況、投資目標和風險承受能力謹慎評估。
+ 如有需要，請諮詢專業的金融顧問。
+ </p>
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+
  </div>
  </footer>
  </div>
