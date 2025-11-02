@@ -420,7 +420,7 @@ function App() {
  {tabs.slice(1).map((tab, index) => (
  <button
  key={tab.id}
- onClick={() => setActiveTab(tab.id)}
+ onClick={() => handleTabChange(tab.id)}
  className="group bg-white hover:bg-orange-50 rounded-xl p-4 sm:p-5 transition-all duration-200 border-2 border-orange-200 hover:border-orange-400 hover:shadow-lg"
  >
  <div className="flex flex-col items-center text-center">
