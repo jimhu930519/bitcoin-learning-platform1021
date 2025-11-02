@@ -27,6 +27,7 @@ function MiningSimulator() {
  const [showRewardInfo, setShowRewardInfo] = useState(false)
  const [showComparison, setShowComparison] = useState(false)
  const [showSuccessDetail, setShowSuccessDetail] = useState(false)
+ const [exampleLoadedMessage, setExampleLoadedMessage] = useState(null)
  const [miningReward, setMiningReward] = useState({
  blockReward: 3.125,
  transactionFees: 0,
@@ -206,12 +207,13 @@ function MiningSimulator() {
  }, [])
 
  // 快速填入範例
- const fillExample = useCallback((example) => {
+ const fillExample = useCallback((example, message) => {
  setBlockNumber(example.blockNumber)
  setTransactions(example.transactions)
  setPreviousHash(example.previousHash)
  setNonce(0)
  setDifficulty(example.difficulty)
+ setExampleLoadedMessage(message)
  }, [])
 
  // 重置
@@ -237,13 +239,13 @@ function MiningSimulator() {
  }
  }, [])
 
- // 難度統計數據
+ // 難度統計數據（基於平均算力 ~50,000 H/s）
  const difficultyStats = [
- { zeros: 2, avgAttempts: '~100', time: '< 1秒', realWorld: '超級簡單' },
- { zeros: 3, avgAttempts: '~1,000', time: '~1秒', realWorld: '很簡單' },
- { zeros: 4, avgAttempts: '~10,000', time: '~10秒', realWorld: '簡單' },
- { zeros: 5, avgAttempts: '~100,000', time: '~2分鐘', realWorld: '中等' },
- { zeros: 19, avgAttempts: '~10²⁰', time: '需要超級電腦數年', realWorld: '真實比特幣難度' }
+ { zeros: 2, avgAttempts: '~256', time: '< 0.01秒', realWorld: '超級簡單' },
+ { zeros: 3, avgAttempts: '~4,096', time: '~0.1秒', realWorld: '很簡單' },
+ { zeros: 4, avgAttempts: '~65,536', time: '~1-3秒', realWorld: '簡單' },
+ { zeros: 5, avgAttempts: '~1,048,576', time: '~20-40秒', realWorld: '中等' },
+ { zeros: 19, avgAttempts: '~10²³', time: '需要超級電腦數年', realWorld: '真實比特幣難度' }
  ]
 
  return (
@@ -583,24 +585,46 @@ function MiningSimulator() {
  </div>
  )}
 
+ {/* 範例載入提示訊息 - 移到最上方 */}
+ {exampleLoadedMessage && (
+ <div className="mb-6 bg-blue-100 border-l-4 border-blue-500 p-4 rounded-lg animate-fadeIn relative shadow-md">
+ <button
+ onClick={() => setExampleLoadedMessage(null)}
+ className="absolute top-2 right-2 text-blue-600 hover:text-blue-800 transition-colors"
+ aria-label="關閉提示"
+ >
+ <span className="text-xl font-bold">×</span>
+ </button>
+ <p className="text-sm text-blue-800 font-semibold flex items-center pr-6">
+ <span className="mr-2">✓</span>
+ {exampleLoadedMessage}
+ </p>
+ </div>
+ )}
+
  {/* 快速填入範例 */}
  <div className="mb-8 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl p-6 border-2 border-indigo-200">
- <h3 className="font-bold text-gray-800 mb-4 text-xl flex items-center">
+ <h3 className="font-bold text-gray-800 mb-3 text-xl flex items-center">
  <span className="mr-2"></span>
  快速填入範例
  </h3>
- <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+ <p className="text-sm text-gray-600 mb-4 leading-relaxed">
+ 這些範例幫助你理解：<strong>簡單</strong>展示創世區塊的起源 · <strong>中等</strong>體驗正常交易打包 · <strong>困難</strong>使用相同數據但更高難度，讓你體會難度對挖礦時間的影響
+ </p>
+
+ <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
  <button
  onClick={() => fillExample({
  blockNumber: 0,
  transactions: 'Coinbase: Genesis Block - 50 BTC Reward',
  previousHash: '0000000000000000',
  difficulty: 2
- })}
+ }, '已載入創世區塊範例 - 這是比特幣區塊鏈的第一個區塊，前一個雜湊值為全0，代表區塊鏈的起點')}
  disabled={isMining}
- className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-4 py-3 rounded-xl transition-all duration-300 font-semibold shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+ className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-4 py-4 rounded-xl transition-all duration-300 font-semibold shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed text-left"
  >
- 簡單範例 (2個0)
+ <div className="font-bold text-base mb-1">簡單範例 (2個0)</div>
+ <div className="text-xs opacity-90">創世區塊：比特幣的起源</div>
  </button>
  <button
  onClick={() => fillExample({
@@ -608,23 +632,25 @@ function MiningSimulator() {
  transactions: 'Charlie -> David: 0.5 BTC, Eve -> Frank: 2 BTC',
  previousHash: 'a1b2c3d4e5f6g7h8',
  difficulty: 3
- })}
+ }, '已載入中等範例 - 包含2筆正常交易，難度設為3個前導0，適合體驗基本挖礦流程')}
  disabled={isMining}
- className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white px-4 py-3 rounded-xl transition-all duration-300 font-semibold shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+ className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white px-4 py-4 rounded-xl transition-all duration-300 font-semibold shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed text-left"
  >
- 中等範例 (3個0)
+ <div className="font-bold text-base mb-1">中等範例 (3個0)</div>
+ <div className="text-xs opacity-90">普通交易：體驗基本挖礦</div>
  </button>
  <button
  onClick={() => fillExample({
- blockNumber: 1000,
- transactions: 'Alice -> Bob: 1.5 BTC, Charlie -> David: 0.8 BTC, Eve -> Frank: 2.3 BTC',
- previousHash: '00000a1b2c3d4e5f',
+ blockNumber: 100,
+ transactions: 'Charlie -> David: 0.5 BTC, Eve -> Frank: 2 BTC',
+ previousHash: 'a1b2c3d4e5f6g7h8',
  difficulty: 4
- })}
+ }, '已載入困難範例 - 使用與中等範例相同的交易數據，但難度提高到4個前導0。對比兩者可以理解：相同的數據，更高的難度需要更多嘗試次數')}
  disabled={isMining}
- className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-4 py-3 rounded-xl transition-all duration-300 font-semibold shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+ className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-4 py-4 rounded-xl transition-all duration-300 font-semibold shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed text-left"
  >
- 困難範例 (4個0)
+ <div className="font-bold text-base mb-1">困難範例 (4個0)</div>
+ <div className="text-xs opacity-90">高難度：相同數據更難找到</div>
  </button>
  </div>
  </div>
@@ -1177,11 +1203,11 @@ function MiningSimulator() {
  <div className="space-y-3">
  <div className="flex justify-between items-center">
  <span className="text-gray-600">挖礦速度:</span>
- <span className="font-bold text-blue-600">~1,000 H/s</span>
+ <span className="font-bold text-blue-600">~30,000-60,000 H/s</span>
  </div>
  <div className="flex justify-between items-center">
  <span className="text-gray-600">難度 4 所需時間:</span>
- <span className="font-bold text-blue-600">~10-30 秒</span>
+ <span className="font-bold text-blue-600">~1-3 秒</span>
  </div>
  <div className="flex justify-between items-center">
  <span className="text-gray-600">設備:</span>
@@ -1219,7 +1245,7 @@ function MiningSimulator() {
  1 EH/s (Exahash) = 1,000,000,000,000,000,000 H/s (100京次/秒)
  </p>
  <p className="text-sm text-gray-700 mt-2">
- <strong>真實比特幣網絡的算力是你瀏覽器的 600,000,000,000,000,000 倍！</strong>
+ <strong>真實比特幣網絡的算力（600 EH/s）是你瀏覽器（~50,000 H/s）的 12,000,000,000,000 倍（12兆倍）！</strong>
  </p>
  <p className="text-sm text-gray-700 mt-2">
  這就是為什麼個人電腦無法獨自挖到比特幣，必須使用專業礦機加入<Tooltip term="礦池" definition="Mining Pool，多個礦工聯合挖礦的組織。礦池將所有成員的算力集中起來，找到區塊後按算力貢獻比例分配獎勵，讓小礦工也能獲得穩定收益。" type="info" />才有機會！

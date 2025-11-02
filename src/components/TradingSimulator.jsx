@@ -651,9 +651,9 @@ function TradingSimulator() {
  {/* 右側：錢包餘額、掛單列表和訂單歷史 */}
  <div className="space-y-6">
  {/* 錢包餘額 */}
- <div className="lg:sticky lg:top-40 z-10">
+ <div>
  {/* 外層容器 - 玻璃擬態效果 */}
- <div className="backdrop-blur-md bg-white/90 rounded-2xl p-6 border border-gray-200/50 shadow-card hover:shadow-card-hover transition-all duration-300">
+ <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-card hover:shadow-card-hover transition-all duration-300">
  <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
  <span className="mr-2">💰</span>
  錢包 {selectedWallet} 餘額
