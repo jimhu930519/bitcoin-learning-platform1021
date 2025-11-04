@@ -30,3 +30,17 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+# 文件報告與簡報
+*_REPORT.md
+*_SUMMARY.md
+*_ARCHITECTURE.md
+*_USAGE.md
+*_CHECKLIST.md
+*.pdf
+功能展示影片腳本.md
+挖礦範例教育說明改進建議.md
+專案研究報告.md
+簡報框架*.md
+
+# 備份檔案
+*.backup
